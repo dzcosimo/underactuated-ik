@@ -79,6 +79,7 @@
     let v = S.gain * (S.xbar - c.x) / J;
     v = Math.max(-2.5, Math.min(2.5, v));
     const n = f(qa + dt * v); if (!n) return false;
+    if (sMem !== undefined && Math.abs(n.s - sMem) > 0.1) { S.msg = "The held branch ends here: E folds back"; return false; }
     sMem = n.s; S.q = n.q; S.msg = "";
     return true;
   }
@@ -219,6 +220,11 @@
       c.setLineDash([]);
     };
     segs(Zsegs, css("--target"), 2.5, true);
+    // thin dashed lines: shapes with the same tendon length (q_a constant), along the passive direction
+    { c.save(); c.beginPath(); c.rect(pad, pad, w - 2 * pad, h - 2 * pad); c.clip(); const a = A(), d = D(); c.strokeStyle = css("--muted"); c.globalAlpha = 0.35; c.lineWidth = 1 * dpr; c.setLineDash([3 * dpr, 5 * dpr]); c.beginPath();
+      for (let k = -6; k <= 6; k++) { const qa = k * 0.5, b0 = [qa * a[0], qa * a[1]];
+        const p1 = toPx([b0[0] - 6 * d[0], b0[1] - 6 * d[1]]), p2 = toPx([b0[0] + 6 * d[0], b0[1] + 6 * d[1]]); c.moveTo(...p1); c.lineTo(...p2); }
+      c.stroke(); c.setLineDash([]); c.globalAlpha = 1; c.restore(); }
     segs(Esegs, css("--held"), 3.5, false);
     // trail and current point
     c.strokeStyle = css("--accent2"); c.lineWidth = 2 * dpr; c.beginPath();
@@ -244,7 +250,7 @@
     const eq = gu < 0.05, held = eq && kD(S.q) > 0, there = ex < 0.005;
     const pill = $("pg-state");
     pill.textContent = S.msg ? S.msg : held && there ? "At the target and held" : eq && there ? "At the target, on an unstable equilibrium" : held ? "Held, not at the target" : eq ? "On an unstable equilibrium" : there ? "At the target, but the arm cannot hold this shape" : "Neither held nor at the target";
-    pill.dataset.state = S.msg ? "warn" : held && there ? "ok" : held ? "mid" : "bad";
+    pill.dataset.state = S.msg ? (S.msg.startsWith("Pick") ? "idle" : "warn") : held && there ? "ok" : held ? "mid" : "bad";
   };
   const draw = () => { drawArm(); drawCS(); readout(); drawPlot(); };
 
@@ -261,7 +267,7 @@
   xs.addEventListener("input", () => { S.xbar = parseFloat(xs.value); $("pg-x-v").textContent = S.xbar.toFixed(2); recomputeZ(); draw(); follow(); });
 
   root.querySelectorAll("[data-algo]").forEach((b) => b.addEventListener("click", () => {
-    S.algo = +b.dataset.algo; S.follow = false;
+    S.algo = +b.dataset.algo; S.follow = false; setRun(false);
     root.querySelectorAll("[data-algo]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
     if (S.algo === 0) { setRun(false); S.q = [0, -1]; S.msg = ""; }
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
@@ -280,6 +286,7 @@
     const px = (ev.clientX - r.left) * dpr, py = (ev.clientY - r.top) * dpr, { pad, w, h } = csGeom;
     const q = [QR.x[0] + (px - pad) / (w - 2 * pad) * (QR.x[1] - QR.x[0]), QR.y[0] + (h - pad - py) / (h - 2 * pad) * (QR.y[1] - QR.y[0])];
     if (Math.abs(q[0]) > Math.PI || Math.abs(q[1]) > Math.PI) return;
+    setRun(false); S.follow = false;
     S.q = q; sMem = undefined;
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
     S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw();

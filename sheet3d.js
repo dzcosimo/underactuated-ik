@@ -135,7 +135,7 @@
     const x1 = cy * x - sy * y, y1 = sy * x + cy * y;
     const cp = Math.cos(pitch), sp = Math.sin(pitch);
     const yv = cp * y1 - sp * z, zv = sp * y1 + cp * z;   // zv: screen up, yv: depth
-    const sc = Math.min(w, h) / 4.6, f = 6 / (6 + yv);
+    const sc = Math.min(w, h) / 5.6, f = 6 / (6 + yv);
     return [w / 2 + x1 * sc * f, h * 0.53 - zv * sc * f, yv];
   }
 

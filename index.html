@@ -94,7 +94,7 @@
   .presets button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
   #pg-plot { width: 100%; height: 130px; display: block; border: 1px solid var(--rule); border-radius: 10px; background: var(--bg); }
   details.explore > summary { font-size: 14px; }
-  .tldr { font-family: var(--font-display); font-size: clamp(19px, 2.2vw, 23px); line-height: 1.5; max-width: 60ch; }
+  .tldr { font-family: var(--font-display); font-size: clamp(19px, 2.2vw, 23px); line-height: 1.5; }
 
   /* two strategies */
   .notation { min-width: 0; max-width: 100%; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
@@ -111,7 +111,7 @@
   .simcap { font-size: 15px; color: var(--muted); }
   details.more-notation > summary { cursor: pointer; font-family: var(--font-ui); font-size: 14px; margin: 4px 0 8px; }
   details.figs > summary { cursor: pointer; font-family: var(--font-ui); font-size: 15px; }
-  .summary { font-size: 18px; max-width: 72ch; }
+  .summary { font-size: 18px; }
   .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
   .btn.primary .soon { color: var(--bg); opacity: .8; }
   .takeaway { border-left: 3px solid var(--held); padding: 4px 0 4px 14px; }
@@ -120,12 +120,13 @@
   details.figs > summary { display: inline-flex; padding: 6px 13px; border: 1px solid var(--rule); border-radius: 999px; background: var(--surface); }
   p { text-wrap: pretty; }
   @media (min-width: 1000px) { .prose, .hint, .takeaway { font-size: 18px; line-height: 1.7; } }
-  .simframe, .paperfig { max-width: 980px; margin-inline: auto; width: 100%; box-sizing: border-box; }
+  .simframe, .paperfig { width: 100%; box-sizing: border-box; }
+  .simframe video { max-height: min(72vh, 560px); }
   .simframe video { cursor: pointer; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .simframe, :root:not([data-theme="light"]) .paperfig { background: #e9edf0; border-color: transparent; } :root:not([data-theme="light"]) .simframe video, :root:not([data-theme="light"]) .paperfig img { filter: brightness(.92); } }
-  :root[data-theme="dark"] .simframe, :root[data-theme="dark"] .paperfig { background: #e9edf0; border-color: transparent; }
-  :root[data-theme="dark"] .simframe video, :root[data-theme="dark"] .paperfig img { filter: brightness(.92); }
-  @media (max-width: 600px) { .card video { margin-inline: -18px; width: calc(100% + 36px); max-width: none; border-radius: 0; } }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .simframe, :root:not([data-theme="light"]) .paperfig { background: #d4d4d4; border-color: transparent; } :root:not([data-theme="light"]) .simframe video, :root:not([data-theme="light"]) .paperfig img { filter: brightness(.83); } }
+  :root[data-theme="dark"] .simframe, :root[data-theme="dark"] .paperfig { background: #d4d4d4; border-color: transparent; }
+  :root[data-theme="dark"] .simframe video, :root[data-theme="dark"] .paperfig img { filter: brightness(.83); }
+  @media (max-width: 600px) { .card video { margin-inline: -22px; width: calc(100% + 44px); max-width: none; border-radius: 0; } }
   #playground .controls { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
   #sheet3d .controls { max-width: 380px; }
   @media (pointer: coarse) { .simtabs button, .act, .seg button { min-height: 44px; } }
@@ -133,8 +134,8 @@
   .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
   .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .card .tag { font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
-  .card .tag.s1 { color: var(--actuator); }
-  .card .tag.s2 { color: var(--held); }
+  .card .tag.s1 { color: var(--actuator-text, var(--actuator)); }
+  .card .tag.s2 { color: var(--held-text, var(--held)); }
   .card img { border-radius: 8px; background: var(--stage); }
   .card dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 15px; }
   .card dt { color: var(--muted); }
@@ -148,7 +149,8 @@
   .views { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .views3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
   #s3-arm { aspect-ratio: 4 / 5; }
-  @media (max-width: 760px) { #s3-arm { aspect-ratio: 16 / 10; } }
+  #s3-canvas { aspect-ratio: 16 / 10; }
+  @media (max-width: 760px) { #s3-canvas { aspect-ratio: 1 / 1; } #s3-arm { aspect-ratio: 2 / 1; } }
   @media (max-width: 760px) { .views3 { grid-template-columns: 1fr; } }
   .view { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .view canvas { width: 100%; aspect-ratio: 1 / 0.85; display: block; border-radius: 10px; border: 1px solid var(--rule); background: var(--bg); touch-action: none; }
@@ -171,6 +173,7 @@
   .pill[data-state="ok"] { color: var(--ok); }
   .pill[data-state="mid"] { color: var(--warn); }
   .pill[data-state="bad"], .pill[data-state="warn"] { color: var(--bad); }
+  .pill[data-state="idle"] { color: var(--muted); }
   .hint { font-size: 15px; color: var(--muted); }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
   .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
@@ -197,6 +200,26 @@
   footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 18px; }
   @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
   @media (max-width: 600px) { .seg { display: grid; grid-template-columns: 1fr; border-radius: 12px; width: 100%; } .seg button { text-align: left; padding: 10px 14px; } .seg button + button { border-top: 1px solid var(--rule); } #pg-plot { height: 160px; } }
+  :root { --actuator-text: #a9501a; --held-text: #2f7029; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --actuator-text: var(--actuator); --held-text: var(--held); } }
+  :root[data-theme="dark"] { --actuator-text: var(--actuator); --held-text: var(--held); }
+  .lede { color: var(--held-text, var(--held)); }
+  .jump { display: flex; flex-wrap: wrap; gap: 4px 18px; font-family: var(--font-ui); font-size: 15px; margin-top: -8px; }
+  .jump a { color: var(--muted); text-decoration: none; }
+  .jump a:hover { color: var(--accent); }
+  section > h3 { font-size: 23px; font-weight: 600; margin-top: 28px; padding-top: 28px; }
+  summary, details.more-notation > summary { font-size: 15px; }
+  @media (max-width: 600px) {
+    .bib pre { padding-right: 16px; padding-top: 48px; }
+    .simtabs { flex-wrap: nowrap; overflow-x: auto; margin-inline: -16px; padding-inline: 16px; scrollbar-width: none; }
+    .simtabs button { flex: none; }
+    #playground { display: flex; flex-direction: column; }
+    #playground .try { order: 0; } #playground .bar { order: 1; } #playground .views { order: 2; } #playground .controls { order: 3; grid-template-columns: 1fr 1fr; gap: 10px 14px; } #playground .readout { order: 4; } #pg-plot { order: 5; }
+  }
+  .card dd { min-width: 0; overflow-wrap: anywhere; }
+  mjx-container[display="false"] { max-width: 100%; }
+  mjx-container { overflow-x: auto; overflow-y: hidden; }
+  html, body { overflow-x: clip; }
 </style>
 
 </head>
@@ -213,11 +236,10 @@
     <nav class="links" aria-label="Paper resources">
       <a class="btn primary" href="https://github.com/dzcosimo/underactuated-ik-code">Code <span class="soon">MATLAB</span></a>
       <a class="btn" href="#bibtex">BibTeX</a>
-      <a class="btn" href="#explainers">Explainer videos</a>
-      <a class="btn" href="#playground-section">Try it</a>
-      <a class="btn" href="#sims">Results</a>
-      <a class="btn" href="#guide">Practitioner's guide</a>
-      <span class="btn" aria-disabled="true">Paper and arXiv <span class="soon">links with publication</span></span>
+      <span class="btn" aria-disabled="true">Paper · arXiv <span class="soon">soon</span></span>
+    </nav>
+    <nav class="jump" aria-label="On this page">
+      <a href="#explainers">Explainers</a><a href="#playground-section">Try it</a><a href="#sims">Results</a><a href="#guide">Guide</a>
     </nav>
     <figure>
       <video src="hero_problem.mp4" poster="hero_problem.jpg" autoplay muted loop playsinline aria-label="A tendon-driven double pendulum reaches the target with a shape it cannot hold, sags under gravity, and then reaches the target with a held shape on the set E"></video>
@@ -255,7 +277,7 @@
     <p class="prose">With a motor on every joint, inverse kinematics is geometry: any configuration that reaches the target works, because the motors hold it. Replace the two motors with one tendon and the arm keeps one direction of motion that no actuator controls: gravity and springs decide where it goes. Most configurations that reach the target can no longer be held. The ones the robot can hold form a set \(\mathcal{E}\), and the solution has to lie on it.</p>
     <figure>
       <video src="explainer_problem.mp4" poster="explainer_problem.jpg" controls preload="metadata" playsinline></video>
-      <figcaption>From the fully actuated case to a tendon-driven double pendulum. The goal becomes \(\dot q = c_{\mathrm{IK}}(q,\bar x)\) with \(h(q(t)) \to \bar x\) and \(q(t) \to \mathcal{E}\).</figcaption>
+      <figcaption>From the fully actuated arm to a tendon-driven double pendulum. The goal: a loop that brings the tip to the target and the shape onto \(\mathcal{E}\).</figcaption>
     </figure>
   </section>
 
@@ -263,9 +285,9 @@
     <p class="eyebrow">What the paper contributes</p>
     <h2 id="contrib">Inverse kinematics on the shapes the robot can hold</h2>
     <div class="contrib">
-      <div><h3>A general formulation</h3><p>Closed-loop inverse kinematics extended from fully actuated to underactuated mechanical systems, built on the set \(\mathcal{E}\) of configurations the robot can hold. Classic inverse kinematics is the special case of full actuation. The actuator-space inversion common in continuum soft robotics corresponds to a flat \(\mathcal{E}\), which is exact without gravity, with linear elasticity and equal stiffness within each actuated section.</p></div>
+      <div><h3>A general formulation</h3><p>Closed-loop inverse kinematics extended to underactuated mechanical systems, built on the set \(\mathcal{E}\) of configurations the robot can hold. Classic IK is the fully actuated special case; the actuator-space inversion of soft robotics is the case of a flat \(\mathcal{E}\).</p></div>
       <div><h3>Algorithm 1</h3><p>Closed-loop inverse kinematics (CLIK) on \(\mathcal{E}\) when the statics can be solved for the passive coordinates beforehand, with conditions for exponential convergence.</p></div>
-      <div><h3>Algorithm 2</h3><p>Static feasibility written as a holonomic constraint and embedded in the loop, in the manner of constrained CLIK. No explicit solution of the statics is needed; convergence conditions are given.</p></div>
+      <div><h3>Algorithm 2</h3><p>"The robot can hold this shape" written as an equation on \(q\) (a holonomic constraint) and added to the loop as a second task, as in constrained CLIK. No explicit solution of the statics is needed; convergence conditions are given.</p></div>
     </div>
   </section>
 
@@ -277,10 +299,10 @@
       <dl>
         <dt>\(q\)</dt><dd>configuration of the robot: joint angles, curvatures, shape parameters (\(n\) of them)</dd>
         <dt>\(q_{\mathrm a}\)</dt><dd>actuated coordinates, set directly by the actuators: motor angles, tendon lengths (\(m < n\) of them). In the double pendulum, \(q_{\mathrm a}\) is the tendon length, a weighted sum of the two joint angles</dd>
-        <dt>\(q_{\mathrm u}\)</dt><dd>unactuated coordinates: what still moves when the actuators are locked</dd>
+        <dt>\(q_{\mathrm u}\)</dt><dd>unactuated coordinates: what still moves when the actuators are locked. In the double pendulum, \(q_{\mathrm u}\) is the joint motion that keeps the tendon length fixed</dd>
         <dt>\(x = h(q)\), \(\bar x\)</dt><dd>task variable (for example the tip position) and its target</dd>
-        <dt>\(G(q)\), \(G_{\mathrm u}\)</dt><dd>potential forces (gravity, springs) and their part along \(q_{\mathrm u}\). In actuation coordinates the actuators push only on \(q_{\mathrm a}\), so nothing balances \(G_{\mathrm u}\): with the actuators locked, the robot stays still only where \(G_{\mathrm u} = 0\). Solving \(G_{\mathrm u} = 0\) is what we call solving the statics</dd>
-        <dt>\(\mathcal{E}\)</dt><dd>configurations the robot can hold, that is static equilibria: \(G_{\mathrm u}(q) = 0\). \(\mathcal{E}\) also contains unstable equilibria: with the actuators held, an equilibrium is stable if \(H_{\mathrm{uu}} \succ 0\). Neither algorithm checks this, and a low-level controller acting only on \(q_{\mathrm a}\) cannot stabilize the others (see the dancer, Unstable target)</dd>
+        <dt>\(G(q)\), \(G_{\mathrm u}\)</dt><dd>potential forces (gravity, springs) and their part along \(q_{\mathrm u}\). We change coordinates from \(q\) to \((q_{\mathrm a}, q_{\mathrm u})\) so that the actuators push only on \(q_{\mathrm a}\), so nothing balances \(G_{\mathrm u}\): with the actuators locked, the robot stays still only where \(G_{\mathrm u} = 0\). Solving \(G_{\mathrm u} = 0\) is what we call solving the statics</dd>
+        <dt>\(\mathcal{E}\)</dt><dd>configurations the robot can hold, that is static equilibria: \(G_{\mathrm u}(q) = 0\). \(\mathcal{E}\) also contains unstable equilibria. \(H_{\mathrm{uu}} = \partial G_{\mathrm u}/\partial q_{\mathrm u}\) is the stiffness the robot feels along \(q_{\mathrm u}\) with the actuators locked, and the equilibrium is stable when it is positive (\(H_{\mathrm{uu}} \succ 0\)). Neither algorithm checks this, and a collocated controller that feeds back only \(q_{\mathrm a}\) cannot stabilize the others; that takes feedback on \(q_{\mathrm u}\) too (see the dancer, Unstable target)</dd>
       </dl>
       <details class="more-notation">
       <summary>More symbols: Jacobians, Hessian blocks, projectors, gains</summary>
@@ -288,8 +310,8 @@
         <dt>\(\bar q_{\mathrm u}(q_{\mathrm a})\), \(h_{\mathrm a}\)</dt><dd>the held \(q_{\mathrm u}\) for given actuators, and the resulting configuration (Algorithm 1). The actuators-to-task map is \(h\circ h_{\mathrm a}\)</dd>
         <dt>\(J_{\mathrm a}, J_{\mathrm u}\)</dt><dd>task Jacobians with respect to \(q_{\mathrm a}\) and \(q_{\mathrm u}\)</dd>
         <dt>\(H_{\mathrm{ua}}, H_{\mathrm{uu}}\)</dt><dd>derivatives of \(G_{\mathrm u}\) with respect to \(q_{\mathrm a}\) and \(q_{\mathrm u}\)</dd>
-        <dt>\(P_{\mathcal E}, P_Z\)</dt><dd>projectors: \(P_{\mathcal E}\) turns a task correction into a motion that keeps \(G_{\mathrm u}\) unchanged, \(P_Z\) turns a statics correction into a motion that keeps \(h\) unchanged, both to first order (Algorithm 2)</dd>
-        <dt>\(\Gamma, \Gamma_Z, \Gamma_E\)</dt><dd>positive-definite gains</dd>
+        <dt>\(P_{\mathcal E}, P_{\mathcal Z}\)</dt><dd>projectors: \(P_{\mathcal E}\) turns a task correction into a motion that keeps \(G_{\mathrm u}\) unchanged, \(P_{\mathcal Z}\) turns a statics correction into a motion that keeps \(h\) unchanged, both to first order (Algorithm 2)</dd>
+        <dt>\(\Gamma, \Gamma_{\mathcal Z}, \Gamma_{\mathcal E}\)</dt><dd>positive-definite gains</dd>
         <dt>dimensions</dt><dd>the formulas assume a task with as many dimensions as actuators, \(m\). With fewer (Fig. 1a, b and the dancer below), inverses become pseudoinverses</dd>
       </dl>
       </details>
@@ -299,7 +321,7 @@
       <article class="card">
         <p class="tag s1">Algorithm 1 · statics solved beforehand</p>
         <video src="two_maps_3D.mp4" poster="two_maps_3D.jpg" autoplay muted loop playsinline aria-label="Actuator grid mapped onto the sheet E and then onto the task space"></video>
-        <p>Fix the actuators and the robot settles in a held configuration. Where \(H_{\mathrm{uu}}\) is invertible, the statics define a local branch \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\): pick a stable one and solve it beforehand. The result is a map from actuators to task, defined on held configurations only, and classic closed-loop IK runs on it with Jacobian \(J = J_{\mathrm a} - J_{\mathrm u} H_{\mathrm{uu}}^{-1} H_{\mathrm{ua}}\).</p>
+        <p>Fix the actuators and the robot settles in a held configuration. Where \(H_{\mathrm{uu}}\) is invertible, the statics define a local branch \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\): pick a stable one and solve it beforehand. The result is a map from actuators to task, defined on held configurations only, and classic closed-loop IK runs on it with Jacobian \(J = J_{\mathrm a} - J_{\mathrm u} H_{\mathrm{uu}}^{-1} H_{\mathrm{ua}}\): differentiating \(G_{\mathrm u}(q_{\mathrm a}, \bar q_{\mathrm u}(q_{\mathrm a})) = 0\) gives \(\partial \bar q_{\mathrm u}/\partial q_{\mathrm a} = -H_{\mathrm{uu}}^{-1}H_{\mathrm{ua}}\), and the chain rule does the rest.</p>
         <p class="mono small">\(\dot q_{\mathrm a} = J_{h\circ h_{\mathrm a}}^{-1}\,\Gamma\,\big(\bar x - h\circ h_{\mathrm a}(q_{\mathrm a})\big)\)</p>
         <img src="scheme_statics_first.jpg" alt="Block diagram: the task error is mapped through the inverse Jacobian of the actuators-to-task map and integrated into actuator coordinates; the passive coordinates follow from the statics">
         <dl>
@@ -314,11 +336,13 @@
       <article class="card">
         <p class="tag s2">Algorithm 2 · statics solved online</p>
         <video src="flow_3D_constraint.mp4" poster="flow_3D_constraint.jpg" autoplay muted loop playsinline aria-label="Trajectories from arbitrary starting shapes converging onto E and to the target"></video>
-        <p>When \(G_{\mathrm u}=0\) cannot be solved for \(q_{\mathrm u}\) in advance, the loop solves it online. It asks both the task error and \(G_{\mathrm u}\) to decay exponentially, so the statics hold asymptotically; at each step that gives a linear system in \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\): \(J_{\mathrm a}\dot q_{\mathrm a} + J_{\mathrm u}\dot q_{\mathrm u} = \Gamma_Z(\bar x - h)\) and \(H_{\mathrm{ua}}\dot q_{\mathrm a} + H_{\mathrm{uu}}\dot q_{\mathrm u} = -\Gamma_E G_{\mathrm u}\). The projectors \(P_{\mathcal E}\), \(P_Z\) write out its solution. Where \(\mathcal{E}\) meets the target set in several points, the loop reaches one of them, depending on where it starts.</p>
-        <p class="mono small">\(\dot q = P_{\mathcal E} J_{\mathrm a}^{-1}\Gamma_Z(\bar x - h) - P_Z H_{\mathrm{uu}}^{-1}\Gamma_E G_{\mathrm u}\)</p>
-        <img src="scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_Z, summed and integrated">
+        <p>When \(G_{\mathrm u}=0\) cannot be solved for \(q_{\mathrm u}\) in advance, the loop solves it online. It asks both the task error and \(G_{\mathrm u}\) to decay exponentially, so the statics hold asymptotically; at each step that gives a linear system in \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\):</p>
+        <p class="mono small">\(J_{\mathrm a}\dot q_{\mathrm a} + J_{\mathrm u}\dot q_{\mathrm u} = \Gamma_{\mathcal Z}(\bar x - h)\)<br>\(H_{\mathrm{ua}}\dot q_{\mathrm a} + H_{\mathrm{uu}}\dot q_{\mathrm u} = -\Gamma_{\mathcal E} G_{\mathrm u}\)</p>
+        <p>The projectors \(P_{\mathcal E}\), \(P_{\mathcal Z}\) write out its solution. Where \(\mathcal{E}\) meets the target set in several points, the loop reaches one of them, depending on where it starts.</p>
+        <p class="mono small">\((\dot q_{\mathrm a}, \dot q_{\mathrm u}) = P_{\mathcal E} J_{\mathrm a}^{-1}\Gamma_{\mathcal Z}(\bar x - h) - P_{\mathcal Z} H_{\mathrm{uu}}^{-1}\Gamma_{\mathcal E} G_{\mathrm u}\)</p>
+        <img src="scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_{\mathcal Z}, summed and integrated">
         <dl>
-          <dt>Needs</dt><dd>gradients of \(h\) and \(G_{\mathrm u}\); \(J_{\mathrm a}\) and \(H_{\mathrm{uu}}\) invertible along the way</dd>
+          <dt>Needs</dt><dd>gradients of \(h\) and \(G_{\mathrm u}\); \(J_{\mathrm a}\), \(H_{\mathrm{uu}}\) and \(I - J_{\mathrm a}^{-1}J_{\mathrm u}H_{\mathrm{uu}}^{-1}H_{\mathrm{ua}}\) invertible along the way (the last one: the actuators still move the task along \(\mathcal{E}\))</dd>
           <dt>Gives</dt><dd>starts anywhere these inverses stay well defined, also off \(\mathcal{E}\); no case-by-case derivation; heavier per step</dd>
         </dl>
         <details>
@@ -332,7 +356,7 @@
   <section id="playground-section" aria-labelledby="pg-title">
     <p class="eyebrow">Interactive · runs in your browser</p>
     <h2 id="pg-title">Try it: the tendon-driven arm</h2>
-    <p class="prose">This is the running example of the paper: a double pendulum with one tendon, joint springs and gravity. Pick a method and press Run. Drag the target on the left, or click in the configuration space on the right to choose where the loop starts.</p>
+    <p class="prose">This is the running example of the paper: a double pendulum with one tendon, joint springs and gravity. The task is the horizontal position of the tip, so the shapes that reach it, \(h(q) = \bar x\), form a curve; thin dashed lines join shapes with the same tendon length. Pick a method and press Run. Drag the target on the left, or click in the configuration space on the right to choose where the loop starts.</p>
     <div class="panel" id="playground">
       <ol class="try">
         <li>Run plain IK: the arm reaches the target, then sags once released, because that shape is not an equilibrium.</li>
@@ -366,7 +390,7 @@
         <div class="ctl"><label for="pg-g">Gravity \(g\) <output id="pg-g-v">9.8</output></label><input type="range" id="pg-g" min="0" max="15" step="0.1" value="9.81"></div>
         <div class="ctl"><label for="pg-k1">Spring, joint 1 <output id="pg-k1-v">0</output></label><input type="range" id="pg-k1" min="0" max="20" step="1" value="0"></div>
         <div class="ctl"><label for="pg-k2">Spring, joint 2 <output id="pg-k2-v">10</output></label><input type="range" id="pg-k2" min="0" max="20" step="1" value="10"></div>
-        <div class="ctl"><label for="pg-th">Tendon routing \(\theta\) (how the tendon splits between the joints) <output id="pg-th-v">23°</output></label><input type="range" id="pg-th" min="0" max="90" step="0.5" value="22.5"></div>
+        <div class="ctl"><label for="pg-th" title="How the tendon splits between the two joints">Tendon routing \(\theta\) <output id="pg-th-v">23°</output></label><input type="range" id="pg-th" min="0" max="90" step="0.5" value="22.5"></div>
       </div>
     </div>
   </section>
@@ -383,7 +407,7 @@
         <label class="check"><input type="checkbox" id="s3-flat"> Show the flat sheet (fully actuated picture)</label>
       </div>
       <div class="views3">
-        <div class="view"><canvas id="s3-canvas" role="img" style="aspect-ratio: 16 / 10;" aria-label="Three-dimensional view of the sheet E, the target curve and trajectories"></canvas></div>
+        <div class="view"><canvas id="s3-canvas" role="img" aria-label="Three-dimensional view of the sheet E, the target curve and trajectories"></canvas></div>
         <div class="view"><canvas id="s3-arm" role="img" aria-label="The three-joint arm for each launched trajectory"></canvas><span class="lab">The arm, one colour per trajectory.</span></div>
       </div>
       <div class="legend">
@@ -391,12 +415,12 @@
         <span><span class="sw" style="background: var(--actuator);"></span>lines of constant actuation</span>
         <span><span class="sw" style="background: var(--target);"></span>configurations with \(h(q)=\bar x\)</span>
         <span><span class="sw" style="width: 11px; height: 11px; border-radius: 50%; background: none; border: 2px solid var(--fg);"></span>held solution</span>
-        <span><span class="sw" style="height: 0; border-top: 2px dashed var(--muted); background: none;"></span>Algorithm 2 start, dropped onto \(\mathcal{E}\) along \(q_{\mathrm u}\)</span>
+        <span><span class="sw" style="height: 0; border-top: 2px dashed var(--muted); background: none;"></span>dashed: from an Algorithm 2 start down to the sheet, for depth only</span>
       </div>
       <div class="controls">
         <div class="ctl"><label for="s3-g">Gravity \(g\) <output id="s3-g-v">9.8</output></label><input type="range" id="s3-g" min="0" max="15" step="0.1" value="9.81"></div>
       </div>
-      <p class="hint">The \(q_{\mathrm u}\) axis is stretched so the shape of the sheet is visible. Set gravity to zero and switch on the flat sheet: they coincide.</p>
+      <p class="hint">The \(q_{\mathrm u}\) axis is stretched so the shape of the sheet is visible; the stretch also exaggerates how far Algorithm 2 paths leave the sheet. Set gravity to zero and switch on the flat sheet: they coincide.</p>
     </div>
   </section>
 
@@ -407,7 +431,7 @@
       <figure><video src="flat_sheet_to_E.mp4" poster="flat_sheet_to_E.jpg" autoplay muted loop playsinline aria-label="The flat sheet of the fully actuated picture morphing into the sheet E"></video></figure>
       <div class="prose" style="display: flex; flex-direction: column; gap: 14px;">
         <p>The actuator, configuration and task spaces of continuum robotics, with an actuation model between the first two, may look familiar. That picture gives the three spaces the same dimension, so the actuators alone fix the configuration.</p>
-        <p>In reality the configuration space is much larger. The held configurations form a set \(\mathcal{E}\) with the dimension of the actuators, and the actuators-to-task map lives on it. Without gravity, with linear elasticity and equal stiffness within each actuated section, \(\mathcal{E}\) is exactly the flat sheet of the familiar picture. This helps explain why the fully actuated approximation has worked so well in practice.</p>
+        <p>In reality the configuration space is much larger. The held configurations form a set \(\mathcal{E}\) with the dimension of the actuators, and the actuators-to-task map lives on it. Without gravity, with linear elasticity, equal stiffness within each actuated section and a straight rest shape, \(\mathcal{E}\) is exactly the flat sheet of the familiar picture. This helps explain why the fully actuated approximation has worked so well in practice.</p>
       </div>
     </div>
   </section>
@@ -415,15 +439,15 @@
   <section aria-labelledby="sims">
     <p class="eyebrow">Results</p>
     <h2 id="sims">Simulations: a soft arm and a balancing dancer</h2>
-    <p class="prose">Two systems, each run with both algorithms, in feedforward (ff: the error is computed on the algorithm's own state) and feedback (fb: the error is computed on the measured robot). A low-level controller tracks the actuated part \(\bar q_{\mathrm a}\) of the algorithm's output, with feedforward \(G_{\mathrm a}(\bar q)\); \(q_{\mathrm u}\) follows through the physics. In these runs Algorithm 1 uses a statics map that neglects gravity; on the stiff arm it then reduces to the actuator-space scheme common in soft robotics, and its offsets come from that approximation. Videos play in real time; click a video to pause it.</p>
-    <p class="takeaway"><b>Takeaway.</b> Algorithm 2 converges to the target in every soft-arm case. Algorithm 1 is as accurate as its statics map: a better map, or feedback, shrinks its error.</p>
+    <p class="takeaway"><b>Takeaway.</b> Algorithm 2 approaches the target in every soft-arm run. Algorithm 1 is as accurate as its statics map: a better map, or feedback, shrinks its error. On the dancer, both track the reference; a 20% model error leaves offsets, and an unstable target cannot be held.</p>
+    <p class="prose">Two systems, each run with both algorithms, open loop (ff: the error uses the algorithm's own state) and closed loop (fb: the error uses the measured robot). A low-level controller tracks \(\bar q_{\mathrm a}\); \(q_{\mathrm u}\) follows through the physics. Here Algorithm 1 uses a statics map without gravity on purpose, to show what that approximation costs, and the Jacobian-transpose update \(\dot q_{\mathrm a} = J^\top \Gamma e\). Videos play in real time; click to pause.</p>
 
     <h3>A planar continuum arm, stiff and soft</h3>
     <p class="prose">A planar soft arm, modelled with five constant-curvature segments and driven by two actuated sections: \(q\) has five curvatures, \(q_{\mathrm a}\) two, \(q_{\mathrm u}\) three, and the task is the two-dimensional tip position. Top: the arm under the four variants; red cross: target; teal dots: section ends. Bottom (wide screens only): the tip coordinates over time.</p>
     <div class="simviewer">
       <div class="simtabs" role="group" aria-label="Soft arm scenario">
         <button type="button" data-sim="pcc_stiff" data-ar="2 / 1" aria-pressed="false">Stiff arm · one target<template>Stiff arm (paper, Fig. 18). All four variants reach the neighbourhood of the target. Algorithm 1 uses a statics map that neglects gravity and stops slightly off; Algorithm 2 reaches the target. Feedforward and feedback behave almost alike, since the stiff arm is close to fully actuated. 5 s.</template></button>
-        <button type="button" data-sim="pcc_soft" data-ar="2 / 1" aria-pressed="false">Soft arm · one target<template>Soft arm, 3% of the stiffness (paper, Fig. 19). The arm bends under its own weight. Algorithm 1 in feedforward ends far from the target; feedback reduces the error but leaves an offset. Algorithm 2 converges to the target, faster with feedback. 20 s.</template></button>
+        <button type="button" data-sim="pcc_soft" data-ar="2 / 1" aria-pressed="false">Soft arm · one target<template>Soft arm, 3% of the stiffness (paper, Fig. 19). The arm bends under its own weight. Algorithm 1 in feedforward ends far from the target; feedback reduces the error but leaves an offset. Algorithm 2 approaches the target: with feedback it arrives in about 12 s; in feedforward it is still closing the last centimetres at 20 s. 20 s.</template></button>
         <button type="button" data-sim="pcc_soft_gravity" data-ar="2 / 1" aria-pressed="false">Soft arm · Algorithm 1 with gravity<template>Algorithm 1 on the soft arm with its statics map expanded to first and to second order in gravity, instead of neglecting it. A better statics map brings the feedforward tip closer to the target. 20 s.</template></button>
         <button type="button" data-sim="pcc_stiff_triangle" data-ar="2 / 1" aria-pressed="false">Stiff arm · three targets<template>Stiff arm moving through three targets, with a reference that slides from one to the next. 15 s.</template></button>
         <button type="button" data-sim="pcc_soft_triangle" data-ar="2 / 1" aria-pressed="false">Soft arm · three targets<template>Soft arm through the same three targets. Algorithm 2 tracks all three; Algorithm 1 in feedforward drifts away under gravity. 60 s.</template></button>
@@ -484,8 +508,8 @@
           <li>Near singularities, use a damped inverse in place of a plain one, with either strategy.</li>
           <li>If \(c^{-1}\) is hard to derive symbolically, integrate \(\dot q\) from \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\) using the inverse Jacobian of \(c\).</li>
           <li>\(\partial G_{\mathrm u}/\partial q_{\mathrm a}\) and \(\partial G_{\mathrm u}/\partial q_{\mathrm u}\) can be approximated by finite differences.</li>
-          <li>The loop produces references for the actuated coordinates; a low-level controller tracks them, for example \(\tau = G_{\mathrm a}(\bar q) + K_P(\bar q_{\mathrm a}-q_{\mathrm a}) - K_D\dot q_{\mathrm a}\). This works when the reference is a stable equilibrium (\(H_{\mathrm{uu}}\succ 0\)), and fails at an unstable one.</li>
-          <li>Start Algorithm 2 from a held or nearly held configuration, for example the robot's current one. It converges much faster.</li>
+          <li>The loop produces references for the actuated coordinates; a low-level controller tracks them, for example \(\tau = G_{\mathrm a}(\bar q) + K_P(\bar q_{\mathrm a}-q_{\mathrm a}) - K_D\dot q_{\mathrm a}\). With \(K_P\) large enough, this works when the reference is a stable equilibrium (\(H_{\mathrm{uu}}\succ 0\)), and fails at an unstable one.</li>
+          <li>Start Algorithm 2 from a held or nearly held configuration, for example the robot's current one. Started on \(\mathcal{E}\), it stays on \(\mathcal{E}\) and skips the statics transient.</li>
         </ul>
       </div>
     </div>
