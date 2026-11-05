@@ -155,7 +155,7 @@
       <a class="btn" href="#bibtex">BibTeX</a>
     </nav>
     <figure>
-      <video src="media/teaser_flow_on_E.mp4" poster="media/teaser_flow_on_E.jpg" autoplay muted loop playsinline aria-label="A three-joint arm converging from five starting shapes to one held configuration at the target, next to the sheet E of held configurations"></video>
+      <video src="teaser_flow_on_E.mp4" poster="teaser_flow_on_E.jpg" autoplay muted loop playsinline aria-label="A three-joint arm converging from five starting shapes to one held configuration at the target, next to the sheet E of held configurations"></video>
       <figcaption>A three-joint arm driven by two tendons. Every shape it can hold lies on the sheet \(\mathcal{E}\). Running closed-loop inverse kinematics on that sheet brings five starting shapes to one held configuration at the target \(\bar x\).</figcaption>
     </figure>
   </header>
@@ -175,7 +175,7 @@
     <h2 id="problem">The problem</h2>
     <p class="prose">With a motor on every joint, inverse kinematics is geometry: any configuration that reaches the target works, because the motors hold it. Take away one motor and gravity and springs decide where the passive joint goes. Most configurations that reach the target can no longer be held. The ones the robot can hold form a set \(\mathcal{E}\), and the solution has to lie on it.</p>
     <figure>
-      <video src="media/explainer_problem.mp4" poster="media/explainer_problem.jpg" controls preload="metadata" playsinline></video>
+      <video src="explainer_problem.mp4" poster="explainer_problem.jpg" controls preload="metadata" playsinline></video>
       <figcaption>From the fully actuated case to a tendon-driven double pendulum. The goal becomes \(\dot q = c_{\mathrm{IK}}(q,\bar x)\) with \(h(q(t)) \to \bar x\) and \(q(t) \to \mathcal{E}\).</figcaption>
     </figure>
   </section>
@@ -186,32 +186,32 @@
     <div class="pair">
       <article class="card">
         <p class="tag s1">Solve the statics first</p>
-        <video src="media/two_maps_3D.mp4" poster="media/two_maps_3D.jpg" autoplay muted loop playsinline aria-label="Actuator grid mapped onto the sheet E and then onto the task space"></video>
+        <video src="two_maps_3D.mp4" poster="two_maps_3D.jpg" autoplay muted loop playsinline aria-label="Actuator grid mapped onto the sheet E and then onto the task space"></video>
         <p>Fix the actuators and the robot settles in one held configuration. Write that as \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\). The result is a square map from actuators to task, defined on held configurations only, and classic closed-loop IK runs on it.</p>
         <p class="mono small">\(\dot q_{\mathrm a} = J_{h\circ h_{\mathrm a}}^{-1}\,\Gamma\,\big(\bar x - h\circ h_{\mathrm a}(q_{\mathrm a})\big)\)</p>
-        <img src="img/scheme_statics_first.jpg" alt="Block diagram: the task error is mapped through the inverse Jacobian of the actuators-to-task map and integrated into actuator coordinates; the passive coordinates follow from the statics">
+        <img src="scheme_statics_first.jpg" alt="Block diagram: the task error is mapped through the inverse Jacobian of the actuators-to-task map and integrated into actuator coordinates; the passive coordinates follow from the statics">
         <dl>
           <dt>Needs</dt><dd>an explicit solution of the statics, \(\bar q_{\mathrm u}(q_{\mathrm a})\)</dd>
           <dt>Gives</dt><dd>a light loop in \(m\) dimensions; every intermediate shape is held</dd>
         </dl>
         <details>
           <summary>Watch the full explainer (3 min, includes a side note for soft roboticists)</summary>
-          <video src="media/explainer_solve_statics_first.mp4" poster="media/explainer_solve_statics_first.jpg" controls preload="none" playsinline></video>
+          <video src="explainer_solve_statics_first.mp4" poster="explainer_solve_statics_first.jpg" controls preload="none" playsinline></video>
         </details>
       </article>
       <article class="card">
         <p class="tag s2">Make the statics a constraint</p>
-        <video src="media/flow_3D_constraint.mp4" poster="media/flow_3D_constraint.jpg" autoplay muted loop playsinline aria-label="Trajectories from arbitrary starting shapes converging onto E and to the target"></video>
+        <video src="flow_3D_constraint.mp4" poster="flow_3D_constraint.jpg" autoplay muted loop playsinline aria-label="Trajectories from arbitrary starting shapes converging onto E and to the target"></video>
         <p>When \(G_{\mathrm u}=0\) cannot be solved for \(q_{\mathrm u}\), treat it as a second task. Ask both the task error and \(G_{\mathrm u}\) to decay exponentially; at each step that gives a linear system in \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\).</p>
         <p class="mono small">\(\dot q = P_{\mathcal E} J_{\mathrm a}^{-1}\Gamma_Z(\bar x - h) - P_Z H_{\mathrm{uu}}^{-1}\Gamma_E G_{\mathrm u}\)</p>
-        <img src="img/scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_Z, summed and integrated">
+        <img src="scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_Z, summed and integrated">
         <dl>
           <dt>Needs</dt><dd>gradients of \(h\) and \(G_{\mathrm u}\); \(J_{\mathrm a}\) invertible</dd>
           <dt>Gives</dt><dd>works from any start, no case-by-case derivation; heavier per step</dd>
         </dl>
         <details>
           <summary>Watch the full explainer (2 min)</summary>
-          <video src="media/explainer_statics_as_constraint.mp4" poster="media/explainer_statics_as_constraint.jpg" controls preload="none" playsinline></video>
+          <video src="explainer_statics_as_constraint.mp4" poster="explainer_statics_as_constraint.jpg" controls preload="none" playsinline></video>
         </details>
       </article>
     </div>
@@ -283,7 +283,7 @@
     <p class="eyebrow">Side note</p>
     <h2 id="soft">If you work in soft robotics</h2>
     <div class="pair" style="align-items: center;">
-      <figure><video src="media/flat_sheet_to_E.mp4" poster="media/flat_sheet_to_E.jpg" autoplay muted loop playsinline aria-label="The flat sheet of the fully actuated picture morphing into the sheet E"></video></figure>
+      <figure><video src="flat_sheet_to_E.mp4" poster="flat_sheet_to_E.jpg" autoplay muted loop playsinline aria-label="The flat sheet of the fully actuated picture morphing into the sheet E"></video></figure>
       <div class="prose" style="display: flex; flex-direction: column; gap: 14px;">
         <p>The actuator, configuration and task spaces of continuum robotics, with an actuation model between the first two, may look familiar. That picture gives the three spaces the same dimension, so the actuators alone fix the configuration.</p>
         <p>In reality the configuration space is much larger. The held configurations form a set \(\mathcal{E}\) with the dimension of the actuators, and the actuators-to-task map lives on it. Without gravity and with uniform segments, \(\mathcal{E}\) is exactly the flat sheet of the familiar picture. That is a good reason why the fully actuated approximation has worked so well in practice.</p>
@@ -393,8 +393,8 @@ while ‖x̄ − f‖ > εx  or  ‖Gu‖ > εE
     if (navigator.clipboard) navigator.clipboard.writeText(t).then(done).catch(() => { const r = document.createRange(); r.selectNodeContents(document.getElementById("bib-text")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
   });
 </script>
-<script src="js/playground.js"></script>
-<script src="js/sheet3d.js"></script>
+<script src="playground.js"></script>
+<script src="sheet3d.js"></script>
 
 </body>
 </html>
