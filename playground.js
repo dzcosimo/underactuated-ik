@@ -8,6 +8,7 @@
   // ---------- model ----------
   const P = { l1: 1, l2: 1, m1: 1, m2: 1, g: 9.81, k1: 0, k2: 10, th: Math.PI / 8 };
   const S = { q: [0, 0], xbar: 1.2, algo: 2, running: false, trail: [], gain: 1.5, showSettle: true, msg: "" };
+  var H = { ex: [], gu: [] };
 
   const G = (q) => {
     const s1 = Math.sin(q[0]), s12 = Math.sin(q[0] + q[1]);
@@ -222,7 +223,7 @@
     pill.textContent = S.msg ? S.msg : held && there ? "At the target and held" : held ? "Held, not at the target" : there ? "At the target, but the arm cannot hold this shape" : "Neither held nor at the target";
     pill.dataset.state = S.msg ? "warn" : held && there ? "ok" : held ? "mid" : "bad";
   };
-  const draw = () => { drawArm(); drawCS(); readout(); };
+  const draw = () => { drawArm(); drawCS(); readout(); drawPlot(); };
 
   function bindSlider(id, key, fmt, toModel = (v) => v) {
     const el = $(id), out = $(id + "-v");
@@ -240,12 +241,12 @@
     S.algo = +b.dataset.algo;
     root.querySelectorAll("[data-algo]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
-    S.trail = [S.q.slice()]; draw();
+    S.trail = [S.q.slice()]; clearH(); draw();
   }));
   const runBtn = $("pg-run");
   const setRun = (r) => { S.running = r; runBtn.textContent = r ? "Pause" : "Run"; runBtn.setAttribute("aria-pressed", r ? "true" : "false"); };
-  runBtn.addEventListener("click", () => { setRun(!S.running); if (S.running) { S.trail = [S.q.slice()]; loop(); } });
-  $("pg-reset").addEventListener("click", () => { setRun(false); S.q = [1.25, -1.0]; if (S.algo === 1) { const st = settle(S.q); if (st) S.q = st.q; } S.trail = [S.q.slice()]; sMem = undefined; S.msg = ""; draw(); });
+  runBtn.addEventListener("click", () => { setRun(!S.running); if (S.running) { S.trail = [S.q.slice()]; clearH(); loop(); } });
+  $("pg-reset").addEventListener("click", () => { setRun(false); S.q = [1.25, -1.0]; if (S.algo === 1) { const st = settle(S.q); if (st) S.q = st.q; } S.trail = [S.q.slice()]; clearH(); sMem = undefined; S.msg = ""; draw(); });
   $("pg-settle").addEventListener("change", (e) => { S.showSettle = e.target.checked; draw(); });
 
   // click / drag in configuration space sets the start
@@ -257,7 +258,7 @@
     if (Math.abs(q[0]) > Math.PI || Math.abs(q[1]) > Math.PI) return;
     S.q = q; sMem = undefined;
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
-    S.trail = [S.q.slice()]; S.msg = ""; draw();
+    S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw();
   };
   csCv.addEventListener("pointerdown", (e) => { dragCS = true; csCv.setPointerCapture(e.pointerId); csPick(e); });
   csCv.addEventListener("pointermove", (e) => { if (dragCS) csPick(e); });
@@ -274,6 +275,50 @@
   armCv.addEventListener("pointermove", (e) => { if (dragT) tPick(e); });
   armCv.addEventListener("pointerup", () => { dragT = false; });
 
+
+  // ---------- convergence plot (log scale: exponential decay shows as a straight line) ----------
+  function recordH() { H.ex.push(Math.abs(S.xbar - X(S.q))); H.gu.push(Math.abs(Gu(S.q))); if (H.ex.length > 900) { H.ex.shift(); H.gu.shift(); } }
+  function clearH() { H.ex = []; H.gu = []; recordH(); }
+  function drawPlot() {
+    const cv = root.querySelector("#pg-plot"); if (!cv) return;
+    const { w, h, dpr } = fit(cv), c = cv.getContext("2d");
+    c.clearRect(0, 0, w, h);
+    const L = 46 * dpr, R = 12 * dpr, T = 10 * dpr, B = 22 * dpr, lo = -4, hi = 1.5;
+    const n = Math.max(200, H.ex.length);
+    const px = (i) => L + (w - L - R) * i / (n - 1);
+    const py = (v) => { const l = Math.log10(Math.max(v, 1e-4)); return T + (h - T - B) * (hi - Math.min(hi, l)) / (hi - lo); };
+    c.strokeStyle = css("--rule"); c.lineWidth = 1 * dpr; c.font = `${12 * dpr}px ${css("--font-ui")}`; c.fillStyle = css("--muted");
+    for (const e of [1, 0, -1, -2, -3, -4]) { const y = py(10 ** e); c.beginPath(); c.moveTo(L, y); c.lineTo(w - R, y); c.stroke(); c.fillText(e === 0 ? "1" : e === 1 ? "10" : "1e" + e, 6 * dpr, y + 4 * dpr); }
+    c.fillText("time →", w - R - 46 * dpr, h - 6 * dpr);
+    const line = (arr, col) => { c.strokeStyle = col; c.lineWidth = 2.2 * dpr; c.beginPath(); arr.forEach((v, i) => i ? c.lineTo(px(i), py(v)) : c.moveTo(px(i), py(v))); c.stroke(); };
+    line(H.ex, css("--target")); line(H.gu, css("--held"));
+    c.fillStyle = css("--target"); c.fillText("task error |x̄ − x|", L + 8 * dpr, h - 6 * dpr);
+    c.fillStyle = css("--held"); c.fillText("statics residual |Gᵤ|", L + 150 * dpr, h - 6 * dpr);
+  }
+
+  // ---------- guided experiments ----------
+  const DEF = { "pg-g": 9.81, "pg-k1": 0, "pg-k2": 10, "pg-th": 22.5, "pg-x": 1.2 };
+  function setDefaults() { for (const id in DEF) { const el = $(id); el.value = DEF[id]; el.dispatchEvent(new Event("input")); } }
+  const setAlgo = (n) => root.querySelector(`[data-algo="${n}"]`).click();
+  function sagAnim() {
+    const st = settle(S.q); if (!st) return;
+    const q0 = S.q.slice(), q1 = st.q; let t0 = null;
+    const step = (ts) => { if (t0 === null) t0 = ts; const a = Math.min(1, (ts - t0) / 1400), e = a * a;
+      S.q = [q0[0] + (q1[0] - q0[0]) * e, q0[1] + (q1[1] - q0[1]) * e]; S.trail.push(S.q.slice()); recordH(); draw();
+      if (a < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  const PRESETS = {
+    fail() { setRun(false); setDefaults(); S.algo = 2; S.q = [1.2531, -1.0]; S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw(); setTimeout(sagAnim, 900); },
+    alg1() { setRun(false); setDefaults(); S.q = [0, 0]; setAlgo(1); S.trail = [S.q.slice()]; clearH(); draw(); runBtn.click(); },
+    alg2() { setRun(false); setDefaults(); setAlgo(2); S.q = [1.8, -1.2]; S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw(); runBtn.click(); },
+  };
+  root.querySelectorAll("[data-preset]").forEach((b) => b.addEventListener("click", () => {
+    root.querySelectorAll("[data-preset]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    PRESETS[b.dataset.preset]();
+  }));
+  new ResizeObserver(drawPlot).observe(root.querySelector("#pg-plot"));
+
   let raf = null;
   function loop() {
     if (!S.running) return;
@@ -281,7 +326,7 @@
       const ok = S.algo === 1 ? stepAlg1(0.012) : stepAlg2(0.012);
       if (!ok) { setRun(false); break; }
     }
-    S.trail.push(S.q.slice()); if (S.trail.length > 1500) S.trail.shift();
+    S.trail.push(S.q.slice()); if (S.trail.length > 1500) S.trail.shift(); recordH();
     const done = Math.abs(S.xbar - X(S.q)) < 1e-4 && Math.abs(Gu(S.q)) < 1e-3;
     draw();
     if (done) { setRun(false); return; }
@@ -289,7 +334,7 @@
   }
 
   // initial state: the geometric solution from the first video, off E
-  S.q = [1.2531, -1.0]; S.trail = [S.q.slice()];
+  S.q = [1.2531, -1.0]; S.trail = [S.q.slice()]; clearH();
   recomputeCurves(); draw();
   new ResizeObserver(draw).observe(armCv); new ResizeObserver(draw).observe(csCv);
   const mq = window.matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", draw);

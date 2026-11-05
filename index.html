@@ -53,7 +53,7 @@
   }
   body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
   .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 48px 72px; display: flex; flex-direction: column; gap: 72px; }
-  .prose { max-width: 68ch; }
+  .prose { max-width: none; }
   h1, h2, h3 { font-family: var(--font-display); font-weight: 500; text-wrap: balance; line-height: 1.2; margin: 0; }
   h1 { font-size: clamp(30px, 4.6vw, 48px); letter-spacing: -0.01em; }
   h2 { font-size: clamp(25px, 3.2vw, 33px); }
@@ -80,12 +80,28 @@
   /* media */
   figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
   video, .frame { width: 100%; max-width: 100%; display: block; border-radius: 10px; background: var(--stage); aspect-ratio: 16 / 9; }
-  figcaption { font-size: 15px; color: var(--muted); max-width: 80ch; }
+  figcaption { font-size: 15px; color: var(--muted); }
   .paperfig { background: #ffffff; border-radius: 12px; padding: clamp(10px, 2vw, 22px); border: 1px solid var(--rule); }
   .paperfig img { width: 100%; display: block; }
+  .lede { font-family: var(--font-display); font-style: italic; font-size: clamp(20px, 2.4vw, 26px); color: var(--held); margin-top: -6px; }
+  .contrib { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .contrib > div { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .contrib h3 { font-size: 19px; }
+  .presets { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .presets button { font: inherit; text-align: left; cursor: pointer; background: var(--bg); color: var(--fg); border: 1px solid var(--rule); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .presets button b { font-family: var(--font-ui); font-weight: 600; font-size: 15px; }
+  .presets button span { font-size: 14px; color: var(--muted); }
+  .presets button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  #pg-plot { width: 100%; height: 130px; display: block; border: 1px solid var(--rule); border-radius: 10px; background: var(--bg); }
+  details.explore > summary { font-size: 14px; }
   .tldr { font-family: var(--font-display); font-size: clamp(19px, 2.2vw, 23px); line-height: 1.5; max-width: 60ch; }
 
   /* two strategies */
+  .notation { min-width: 0; max-width: 100%; background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+  .notation dl { display: grid; grid-template-columns: minmax(110px, auto) 1fr; gap: 8px 18px; margin: 0; font-size: 15px; }
+  .notation dt { white-space: nowrap; }
+  .notation dd { margin: 0; min-width: 0; }
+  @media (max-width: 520px) { .notation dl { grid-template-columns: 1fr; gap: 2px 0; } .notation dt { white-space: normal; } .notation dd { margin-bottom: 8px; } }
   .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
   .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .card .tag { font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
@@ -125,7 +141,7 @@
   .pill[data-state="ok"] { color: var(--ok); }
   .pill[data-state="mid"] { color: var(--warn); }
   .pill[data-state="bad"], .pill[data-state="warn"] { color: var(--bad); }
-  .hint { font-size: 15px; color: var(--muted); max-width: 80ch; }
+  .hint { font-size: 15px; color: var(--muted); }
   .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
   .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
 
@@ -154,11 +170,13 @@
 
 </head>
 <body>
+
 <div class="wrap">
 
   <header>
     <p class="eyebrow">The International Journal of Robotics Research · in press</p>
     <h1>Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots</h1>
+    <p class="lede">Inverse kinematics for robots that cannot hold every pose.</p>
     <p class="author"><b>Cosimo Della Santina</b><br><span class="muted">Department of Cognitive Robotics, Delft University of Technology</span></p>
     <nav class="links" aria-label="Paper resources">
       <span class="btn" aria-disabled="true">Paper <span class="soon">link soon</span></span>
@@ -171,15 +189,9 @@
     </nav>
     <figure>
       <video src="hero_problem.mp4" poster="hero_problem.jpg" autoplay muted loop playsinline aria-label="A tendon-driven double pendulum reaches the target with a shape it cannot hold, sags under gravity, and then reaches the target with a held shape on the set E"></video>
-      <figcaption>A tendon-driven double pendulum. Plain geometric inverse kinematics finds a shape that reaches the target \(\bar x\), but the arm cannot hold it: gravity and springs pull the passive joint away. The shapes the arm can hold form the set \(\mathcal{E}\), and the solution has to lie on it.</figcaption>
+      <figcaption>Plain inverse kinematics reaches the target \(\bar x\) with a shape the arm cannot hold: gravity and springs pull the passive joint away. The solution has to lie on the set \(\mathcal{E}\) of shapes the arm can hold.</figcaption>
     </figure>
   </header>
-
-  <section aria-labelledby="tldr">
-    <h2 id="tldr" class="eyebrow" style="font-family: var(--font-ui); font-size: 13px; font-weight: 400;">In short</h2>
-    <p class="tldr">An underactuated robot cannot hold every configuration. Inverse kinematics therefore has to find a configuration that reaches the target and that the robot can actually hold. The paper gives two closed-loop algorithms that do both, with conditions under which they converge.</p>
-  </section>
-
 
   <section aria-labelledby="systems">
     <p class="eyebrow">Fewer actuators than degrees of freedom</p>
@@ -188,11 +200,6 @@
       <div class="paperfig"><img src="fig1_systems.jpg" alt="Three underactuated robots: a two-finger gripper driven by four tendons holding a ball, a humanoid balancing on one tip while regulating its centre of mass, and a tendon-driven continuum soft robot reaching an object with its tip"></div>
       <figcaption>(a) A two-finger gripper driven by four tendons manipulates a ball: 7 degrees of freedom, 4 actuators, a 3-dimensional task. (b) A humanoid balancing on its tip regulates its centre of mass: 11 degrees of freedom, 10 actuators, a 2-dimensional task. (c) A continuum soft robot driven by three tendons positions its tip: infinitely many degrees of freedom, 3 actuators, a 3-dimensional task. In all three, inverse kinematics must return a configuration the robot can hold.</figcaption>
     </figure>
-  </section>
-
-  <section aria-labelledby="abstract" class="prose">
-    <h2 id="abstract">Abstract</h2>
-    <p>Kinematic inversion via closed-loop schemes is at the core of the success of fully actuated robotic manipulators. These algorithms robustly and efficiently compute a reference for low-level controllers to position the end effector or other selected parts of the robot's body in space. This paper concerns itself with the extension of kinematic inversion algorithms beyond fully actuated systems into the realm of underactuated robotics. We propose two strategies that address this challenge under different assumptions. The first is obtained by revisiting a well-known kinematic inversion algorithm from continuum robotics, the direct task-to-actuators inversion, and reformulating it so that it generalizes beyond that field and beyond its current strong assumptions, including full actuation. We then introduce a second closed-loop inversion algorithm that applies in even more general conditions, no longer requiring explicit solutions of the robot's statics. This is achieved by showing that the configuration feasibility constraint can be expressed as a holonomic one and embedding it within the inverse kinematics loop in the manner of constrained CLIK.</p>
   </section>
 
   <section id="explainers" aria-labelledby="problem">
@@ -205,9 +212,36 @@
     </figure>
   </section>
 
+  <section aria-labelledby="contrib">
+    <p class="eyebrow">What the paper contributes</p>
+    <h2 id="contrib">From one idea, two algorithms</h2>
+    <div class="contrib">
+      <div><h3>A general formulation</h3><p>Actuators-to-task inversion, long used in continuum soft robotics, rewritten for generic underactuated mechanical systems. Its basis is the set \(\mathcal{E}\) of equilibrium configurations; the classic method appears as the special case of full actuation.</p></div>
+      <div><h3>Algorithm 1</h3><p>Closed-loop inverse kinematics on \(\mathcal{E}\) when the statics can be solved for the passive coordinates beforehand, with conditions for exponential convergence.</p></div>
+      <div><h3>Algorithm 2</h3><p>Static feasibility written as a holonomic constraint and embedded in the loop, in the manner of constrained CLIK. No explicit solution of the statics is needed; convergence conditions are given.</p></div>
+    </div>
+  </section>
+
   <section aria-labelledby="strategies">
     <p class="eyebrow">Explainers 2 and 3</p>
     <h2 id="strategies">Two algorithms to stay on \(\mathcal{E}\)</h2>
+    <div class="notation" id="notation">
+      <p class="eyebrow">Notation used below</p>
+      <dl>
+        <dt>\(q\)</dt><dd>configuration of the robot: joint angles, curvatures, shape parameters</dd>
+        <dt>\(q_{\mathrm a}\)</dt><dd>actuated coordinates, set directly by the actuators: motor angles, tendon lengths</dd>
+        <dt>\(q_{\mathrm u}\)</dt><dd>unactuated coordinates: what still moves when the actuators are locked</dd>
+        <dt>\(x = h(q)\), \(\bar x\)</dt><dd>task variable (for example the tip position) and its target</dd>
+        <dt>\(G(q)\), \(G_{\mathrm u}\)</dt><dd>potential forces (gravity, springs) and their part along \(q_{\mathrm u}\), which no actuator can balance</dd>
+        <dt>\(\mathcal{E}\)</dt><dd>configurations the robot can hold, that is static equilibria: \(G_{\mathrm u}(q) = 0\). Whether an equilibrium is stable is a separate matter, handled by the low-level controller</dd>
+        <dt>\(\bar q_{\mathrm u}(q_{\mathrm a})\), \(h_{\mathrm a}\)</dt><dd>the held \(q_{\mathrm u}\) for given actuators, and the resulting configuration (Algorithm 1)</dd>
+        <dt>\(J_{\mathrm a}, J_{\mathrm u}\)</dt><dd>task Jacobians with respect to \(q_{\mathrm a}\) and \(q_{\mathrm u}\)</dd>
+        <dt>\(H_{\mathrm{ua}}, H_{\mathrm{uu}}\)</dt><dd>derivatives of \(G_{\mathrm u}\) with respect to \(q_{\mathrm a}\) and \(q_{\mathrm u}\)</dd>
+        <dt>\(P_{\mathcal E}, P_Z\)</dt><dd>lifts: \(P_{\mathcal E}\) turns a task correction into a motion that keeps \(G_{\mathrm u}\) unchanged, \(P_Z\) turns a statics correction into a motion that keeps \(h\) unchanged, both to first order (Algorithm 2)</dd>
+        <dt>\(\Gamma, \Gamma_Z, \Gamma_E\)</dt><dd>positive-definite gains</dd>
+      </dl>
+      <p class="small muted">A fuller, robot-oriented version is in the <a href="#guide">practitioner's guide</a>.</p>
+    </div>
     <div class="pair">
       <article class="card">
         <p class="tag s1">Algorithm 1 · statics solved beforehand</p>
@@ -232,7 +266,7 @@
         <img src="scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_Z, summed and integrated">
         <dl>
           <dt>Needs</dt><dd>gradients of \(h\) and \(G_{\mathrm u}\); \(J_{\mathrm a}\) invertible</dd>
-          <dt>Gives</dt><dd>works from any start, no case-by-case derivation; heavier per step</dd>
+          <dt>Gives</dt><dd>works from any valid initial configuration, no case-by-case derivation; heavier per step</dd>
         </dl>
         <details>
           <summary>Watch the full explainer (2 min)</summary>
@@ -245,8 +279,13 @@
   <section id="playground-section" aria-labelledby="pg-title">
     <p class="eyebrow">Interactive · runs in your browser</p>
     <h2 id="pg-title">Try it: the tendon-driven arm</h2>
-    <p class="prose">This is the running example of the paper: a double pendulum with one tendon, joint springs and gravity. Pick a strategy and press Run. Drag the target on the left, or click in the configuration space on the right to choose where the loop starts. Set gravity to zero and \(\mathcal{E}\) becomes a straight line.</p>
+    <p class="prose">This is the running example of the paper: a double pendulum with one tendon, joint springs and gravity. Start with the three guided experiments, then pick an algorithm and press Run. Drag the target on the left, or click in the configuration space on the right to choose where the loop starts. Set gravity to zero and \(\mathcal{E}\) becomes a straight line.</p>
     <div class="panel" id="playground">
+      <div class="presets" role="group" aria-label="Guided experiments">
+        <button type="button" data-preset="fail" aria-pressed="false"><b>1 · Why plain IK fails</b><span>Reaches the target, then sags: not an equilibrium.</span></button>
+        <button type="button" data-preset="alg1" aria-pressed="false"><b>2 · Algorithm 1 stays on \(\mathcal{E}\)</b><span>Reaches the target through held shapes only.</span></button>
+        <button type="button" data-preset="alg2" aria-pressed="false"><b>3 · Algorithm 2 converges to \(\mathcal{E}\)</b><span>Starts off \(\mathcal{E}\); both errors decay.</span></button>
+      </div>
       <div class="bar">
         <div class="seg" role="group" aria-label="Strategy">
           <button type="button" data-algo="1" aria-pressed="false">Algorithm 1 · statics beforehand</button>
@@ -265,6 +304,9 @@
         <span>task error <span class="num" id="pg-ex">0</span></span>
         <span>statics residual \(|G_{\mathrm u}|\) <span class="num" id="pg-gu">0</span></span>
       </div>
+      <canvas id="pg-plot" aria-label="Task error and statics residual over time, logarithmic scale"></canvas>
+      <details class="explore">
+      <summary>Explore further: target, gravity, springs, tendon routing</summary>
       <div class="controls">
         <div class="ctl"><label for="pg-x">Target \(\bar x\) <output id="pg-x-v">1.20</output></label><input type="range" id="pg-x" min="-1.9" max="1.9" step="0.01" value="1.2"></div>
         <div class="ctl"><label for="pg-g">Gravity \(g\) <output id="pg-g-v">9.8</output></label><input type="range" id="pg-g" min="0" max="15" step="0.1" value="9.81"></div>
@@ -272,6 +314,7 @@
         <div class="ctl"><label for="pg-k2">Spring, joint 2 <output id="pg-k2-v">10</output></label><input type="range" id="pg-k2" min="0" max="20" step="1" value="10"></div>
         <div class="ctl"><label for="pg-th">Tendon routing \(\theta\) <output id="pg-th-v">23°</output></label><input type="range" id="pg-th" min="0" max="90" step="0.5" value="22.5"></div>
       </div>
+      </details>
       <p class="hint">Things to try: run Algorithm 1 and watch the arm stay held the whole way. Switch to Algorithm 2 and start from a point far from \(\mathcal{E}\). Move the target until the tendon can no longer move the tip and the loop reports a singularity.</p>
     </div>
   </section>
@@ -283,7 +326,7 @@
     <div class="panel" id="sheet3d">
       <div class="bar">
         <button type="button" class="act primary" id="s3-on">Algorithm 1 · start on \(\mathcal{E}\)</button>
-        <button type="button" class="act" id="s3-any">Algorithm 2 · start anywhere</button>
+        <button type="button" class="act" id="s3-any">Algorithm 2 · start off \(\mathcal{E}\)</button>
         <button type="button" class="act" id="s3-clear">Clear</button>
         <label class="check"><input type="checkbox" id="s3-flat"> Show the flat sheet (fully actuated picture)</label>
       </div>
@@ -320,11 +363,14 @@
     <p class="eyebrow">Results</p>
     <h2 id="sims">Simulations of a soft arm</h2>
     <p class="prose">A planar piecewise-constant-curvature arm with two actuated segments and five curvature elements, in a stiff and in a soft regime, with each strategy run open-loop and with task-space feedback.</p>
-    <div class="ph-grid">
-      <div class="ph"><b>Stiff arm</b>Simulation video coming soon</div>
-      <div class="ph"><b>Soft arm, bending under its own weight</b>Simulation video coming soon</div>
-      <div class="ph"><b>Feedforward vs feedback</b>Simulation video coming soon</div>
-    </div>
+    <figure>
+      <div class="paperfig"><img src="results_stiff.jpg" alt="Stiff arm: tip trajectories and task coordinates over time for Algorithms 1 and 2, feedforward and feedback; both reach the target, Algorithm 1 with a small steady-state error"></div>
+      <figcaption>Stiff arm, close to the conditions under which the fully actuated approximation is used. Left: tip trajectories and final shapes; right: task coordinates over time. Algorithm 2 also removes the small steady-state error that remains with Algorithm 1.</figcaption>
+    </figure>
+    <figure>
+      <div class="paperfig"><img src="results_soft.jpg" alt="Soft arm: tip trajectories and task coordinates over time; Algorithm 1 in feedforward misses the target as the arm bends under its own weight, Algorithm 2 reaches it"></div>
+      <figcaption>Soft arm, bending under its own weight. Algorithm 1 in feedforward misses the target; feedback reduces the error. Algorithm 2 reaches the target. Simulation videos will follow.</figcaption>
+    </figure>
   </section>
 
   <section id="guide" aria-labelledby="guide-title">
@@ -393,6 +439,13 @@ while ‖x̄ − f‖ > εx  or  ‖Gu‖ > εE
     <div class="ph" style="aspect-ratio: auto; min-height: 120px;"><b>MATLAB implementation of both strategies</b>Repository link coming soon</div>
   </section>
 
+  <section aria-labelledby="abs-title">
+    <details>
+      <summary id="abs-title">Abstract</summary>
+      <p>Kinematic inversion via closed-loop schemes is at the core of the success of fully actuated robotic manipulators. These algorithms robustly and efficiently compute a reference for low-level controllers to position the end effector or other selected parts of the robot's body in space. This paper concerns itself with the extension of kinematic inversion algorithms beyond fully actuated systems into the realm of underactuated robotics. We propose two strategies that address this challenge under different assumptions. The first is obtained by revisiting a well-known kinematic inversion algorithm from continuum robotics, the direct task-to-actuators inversion, and reformulating it so that it generalizes beyond that field and beyond its current strong assumptions, including full actuation. We then introduce a second closed-loop inversion algorithm that applies in even more general conditions, no longer requiring explicit solutions of the robot's statics. This is achieved by showing that the configuration feasibility constraint can be expressed as a holonomic one and embedding it within the inverse kinematics loop in the manner of constrained CLIK.</p>
+    </details>
+  </section>
+
   <section id="bibtex" aria-labelledby="bib-title">
     <h2 id="bib-title">Citation</h2>
     <div class="bib">
@@ -420,6 +473,5 @@ while ‖x̄ − f‖ > εx  or  ‖Gu‖ > εE
 </script>
 <script src="playground.js"></script>
 <script src="sheet3d.js"></script>
-
 </body>
 </html>

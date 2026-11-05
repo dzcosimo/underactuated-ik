@@ -170,7 +170,7 @@
       c.beginPath(); q.S.forEach((p, k) => k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.closePath(); c.fill(); c.stroke();
     }
     // grid lines of constant actuation on the sheet
-    c.strokeStyle = css("--actuator"); c.lineWidth = 1.3 * d; c.globalAlpha = 0.9;
+    c.strokeStyle = css("--actuator"); c.lineWidth = 0.9 * d; c.globalAlpha = 0.35;
     for (let i = 0; i <= N; i += 2) {
       c.beginPath(); for (let j = 0; j <= N; j++) { const p = proj(surf[i][j], w, h); j ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();
       c.beginPath(); for (let j = 0; j <= N; j++) { const p = proj(surf[j][i], w, h); j ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();
@@ -183,7 +183,7 @@
     const now = performance.now();
     for (const r of runs) {
       const n = Math.min(r.pts.length, Math.floor((now - r.t0) / 12) + 1); r.n = n;
-      c.strokeStyle = r.col; c.lineWidth = 2.5 * d; c.beginPath();
+      c.strokeStyle = r.col; c.lineWidth = 3.6 * d; c.beginPath();
       for (let k = 0; k < n; k++) { const p = proj(r.pts[k], w, h); k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();
       const p = proj(r.pts[n - 1], w, h); c.fillStyle = r.col; c.beginPath(); c.arc(p[0], p[1], 5 * d, 0, 2 * Math.PI); c.fill();
       const p0 = proj(r.pts[0], w, h); c.strokeStyle = r.col; c.lineWidth = 2 * d; c.beginPath(); c.arc(p0[0], p0[1], 5 * d, 0, 2 * Math.PI); c.stroke();
