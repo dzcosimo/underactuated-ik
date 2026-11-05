@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{padding-block:env(safe-area-inset-top,0px) env(safe-area-inset-bottom,0px)} body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
+<title>Underactuated Inverse Kinematics</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="Project page for the IJRR paper on closed-loop inverse kinematics for underactuated (soft) robots: explainer videos, interactive demos, and a practitioner's guide.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>
+  window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] }, svg: { fontCache: "global" } };
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+<style>
+  /* Layout: one reading column (68ch) inside a wider media column (1080px); interactive panels sit on raised surfaces.
+     Colours follow the videos: green = held configurations E, amber = target x̄, orange = actuators. */
+  :root {
+    --bg: #f5f7f8; --surface: #ffffff; --stage: #0e1116; --fg: #151a20; --muted: #5b6672; --rule: #d6dde3;
+    --accent: #23708c; --held: #3d8a37; --target: #a87908; --actuator: #cf6a22; --accent2: #2f78b8;
+    --ok: #2f7d32; --warn: #a35f00; --bad: #b3372b;
+    --font-display: "Literata", Georgia, "Times New Roman", serif;
+    --font-body: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-ui: "IBM Plex Sans", Helvetica, Arial, sans-serif;
+    --font-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1116; --surface: #151a21; --stage: #0e1116; --fg: #e7ebee; --muted: #97a2ad; --rule: #263039;
+      --accent: #7cc3d8; --held: #83c167; --target: #f0cd5a; --actuator: #f0954a; --accent2: #6db4ea;
+      --ok: #7fcf74; --warn: #f0b45a; --bad: #f08a7c; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1116; --surface: #151a21; --stage: #0e1116; --fg: #e7ebee; --muted: #97a2ad; --rule: #263039;
+    --accent: #7cc3d8; --held: #83c167; --target: #f0cd5a; --actuator: #f0954a; --accent2: #6db4ea;
+    --ok: #7fcf74; --warn: #f0b45a; --bad: #f08a7c; color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 17px; line-height: 1.6; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 48px 72px; display: flex; flex-direction: column; gap: 72px; }
+  .prose { max-width: 68ch; }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 500; text-wrap: balance; line-height: 1.2; margin: 0; }
+  h1 { font-size: clamp(30px, 4.6vw, 48px); letter-spacing: -0.01em; }
+  h2 { font-size: clamp(25px, 3.2vw, 33px); }
+  h3 { font-size: 21px; }
+  p { margin: 0; }
+  a { color: var(--accent); text-underline-offset: 3px; }
+  section { display: flex; flex-direction: column; gap: 22px; }
+  .eyebrow { font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .muted { color: var(--muted); }
+  .small { font-size: 15px; }
+  code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+
+  /* header */
+  header { display: flex; flex-direction: column; gap: 20px; }
+  .author { font-size: 18px; }
+  .author b { font-weight: 600; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; }
+  .btn { font-family: var(--font-ui); font-size: 15px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; padding: 8px 15px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); color: var(--fg); text-decoration: none; cursor: pointer; }
+  .btn:hover { border-color: var(--accent); }
+  .btn:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn[aria-disabled="true"] { color: var(--muted); cursor: default; border-style: dashed; }
+  .btn .soon { font-size: 12px; color: var(--muted); }
+
+  /* media */
+  figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  video, .frame { width: 100%; max-width: 100%; display: block; border-radius: 10px; background: var(--stage); aspect-ratio: 16 / 9; }
+  figcaption { font-size: 15px; color: var(--muted); max-width: 80ch; }
+  .tldr { font-family: var(--font-display); font-size: clamp(19px, 2.2vw, 23px); line-height: 1.5; max-width: 60ch; }
+
+  /* two strategies */
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+  .card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .card .tag { font-family: var(--font-ui); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .card .tag.s1 { color: var(--actuator); }
+  .card .tag.s2 { color: var(--held); }
+  .card img { border-radius: 8px; background: var(--stage); }
+  .card dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; font-size: 15px; }
+  .card dt { color: var(--muted); }
+  .card dd { margin: 0; }
+  details { border-top: 1px solid var(--rule); padding-top: 12px; }
+  summary { cursor: pointer; font-family: var(--font-ui); font-weight: 500; }
+  details[open] summary { margin-bottom: 12px; }
+
+  /* interactive panels */
+  .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
+  .views { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .views3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .views3 { grid-template-columns: 1fr; } }
+  .view { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .view canvas { width: 100%; aspect-ratio: 1 / 0.85; display: block; border-radius: 10px; border: 1px solid var(--rule); background: var(--bg); touch-action: none; }
+  .view .lab { font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
+  .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px 22px; font-family: var(--font-ui); font-size: 14px; }
+  .ctl { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .ctl label { display: flex; justify-content: space-between; gap: 8px; }
+  .ctl output { font-variant-numeric: tabular-nums; color: var(--muted); }
+  input[type="range"] { width: 100%; accent-color: var(--accent); }
+  .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-family: var(--font-ui); font-size: 14px; }
+  .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 999px; overflow: hidden; }
+  .seg button { font: inherit; border: 0; background: transparent; color: var(--fg); padding: 7px 14px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+  .act { font: inherit; font-weight: 500; border: 1px solid var(--rule); background: var(--bg); color: var(--fg); border-radius: 999px; padding: 7px 16px; cursor: pointer; }
+  .act.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+  .check { display: inline-flex; align-items: center; gap: 6px; }
+  .readout { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: center; font-family: var(--font-ui); font-size: 14px; }
+  .readout span.num { font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+  .pill { border-radius: 999px; padding: 4px 12px; font-weight: 500; border: 1px solid currentColor; }
+  .pill[data-state="ok"] { color: var(--ok); }
+  .pill[data-state="mid"] { color: var(--warn); }
+  .pill[data-state="bad"], .pill[data-state="warn"] { color: var(--bad); }
+  .hint { font-size: 15px; color: var(--muted); max-width: 80ch; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-family: var(--font-ui); font-size: 13px; color: var(--muted); }
+  .sw { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+
+  /* placeholders */
+  .ph-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  .ph { border: 1.5px dashed var(--rule); border-radius: 12px; aspect-ratio: 16 / 9; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; text-align: center; padding: 16px; color: var(--muted); font-family: var(--font-ui); font-size: 14px; }
+  .ph b { color: var(--fg); font-weight: 500; }
+
+  /* guide */
+  .guide { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 28px; }
+  .guide > div { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+  .terms { display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; margin: 0; }
+  .terms dt { font-family: var(--font-mono); white-space: nowrap; }
+  .terms dd { margin: 0; }
+  ul.tight { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .question { border-left: 3px solid var(--held); padding: 6px 0 6px 16px; font-family: var(--font-display); font-size: 19px; }
+  pre { margin: 0; overflow-x: auto; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 16px 18px; font-family: var(--font-mono); font-size: 14px; line-height: 1.55; }
+  .code-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; }
+  .code-row > div { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+
+  .bib { position: relative; }
+  .bib button { position: absolute; top: 10px; right: 10px; }
+  footer { font-size: 14px; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 18px; }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">The International Journal of Robotics Research · in press</p>
+    <h1>Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots</h1>
+    <p class="author"><b>Cosimo Della Santina</b><br><span class="muted">Department of Cognitive Robotics, Delft University of Technology</span></p>
+    <nav class="links" aria-label="Paper resources">
+      <span class="btn" aria-disabled="true">Paper <span class="soon">link soon</span></span>
+      <span class="btn" aria-disabled="true">arXiv <span class="soon">link soon</span></span>
+      <a class="btn" href="#explainers">Explainer videos</a>
+      <a class="btn" href="#playground-section">Try it</a>
+      <a class="btn" href="#guide">Practitioner's guide</a>
+      <span class="btn" aria-disabled="true">Code <span class="soon">MATLAB, soon</span></span>
+      <a class="btn" href="#bibtex">BibTeX</a>
+    </nav>
+    <figure>
+      <video src="media/teaser_flow_on_E.mp4" poster="media/teaser_flow_on_E.jpg" autoplay muted loop playsinline aria-label="A three-joint arm converging from five starting shapes to one held configuration at the target, next to the sheet E of held configurations"></video>
+      <figcaption>A three-joint arm driven by two tendons. Every shape it can hold lies on the sheet \(\mathcal{E}\). Running closed-loop inverse kinematics on that sheet brings five starting shapes to one held configuration at the target \(\bar x\).</figcaption>
+    </figure>
+  </header>
+
+  <section aria-labelledby="tldr">
+    <h2 id="tldr" class="eyebrow" style="font-family: var(--font-ui); font-size: 13px; font-weight: 400;">In short</h2>
+    <p class="tldr">An underactuated robot cannot hold every configuration. Inverse kinematics therefore has to find a configuration that reaches the target and that the robot can actually hold. The paper gives two closed-loop algorithms that do both, with conditions under which they converge.</p>
+  </section>
+
+  <section aria-labelledby="abstract" class="prose">
+    <h2 id="abstract">Abstract</h2>
+    <p>Kinematic inversion via closed-loop schemes is at the core of the success of fully actuated robotic manipulators. These algorithms robustly and efficiently compute a reference for low-level controllers to position the end effector or other selected parts of the robot's body in space. This paper concerns itself with the extension of kinematic inversion algorithms beyond fully actuated systems into the realm of underactuated robotics. We propose two strategies that address this challenge under different assumptions. The first is obtained by revisiting a well-known kinematic inversion algorithm from continuum robotics, the direct task-to-actuators inversion, and reformulating it so that it generalizes beyond that field and beyond its current strong assumptions, including full actuation. We then introduce a second closed-loop inversion algorithm that applies in even more general conditions, no longer requiring explicit solutions of the robot's statics. This is achieved by showing that the configuration feasibility constraint can be expressed as a holonomic one and embedding it within the inverse kinematics loop in the manner of constrained CLIK.</p>
+  </section>
+
+  <section id="explainers" aria-labelledby="problem">
+    <p class="eyebrow">Explainer 1 · 1.5 min</p>
+    <h2 id="problem">The problem</h2>
+    <p class="prose">With a motor on every joint, inverse kinematics is geometry: any configuration that reaches the target works, because the motors hold it. Take away one motor and gravity and springs decide where the passive joint goes. Most configurations that reach the target can no longer be held. The ones the robot can hold form a set \(\mathcal{E}\), and the solution has to lie on it.</p>
+    <figure>
+      <video src="media/explainer_problem.mp4" poster="media/explainer_problem.jpg" controls preload="metadata" playsinline></video>
+      <figcaption>From the fully actuated case to a tendon-driven double pendulum. The goal becomes \(\dot q = c_{\mathrm{IK}}(q,\bar x)\) with \(h(q(t)) \to \bar x\) and \(q(t) \to \mathcal{E}\).</figcaption>
+    </figure>
+  </section>
+
+  <section aria-labelledby="strategies">
+    <p class="eyebrow">Explainers 2 and 3</p>
+    <h2 id="strategies">Two ways to stay on \(\mathcal{E}\)</h2>
+    <div class="pair">
+      <article class="card">
+        <p class="tag s1">Solve the statics first</p>
+        <video src="media/two_maps_3D.mp4" poster="media/two_maps_3D.jpg" autoplay muted loop playsinline aria-label="Actuator grid mapped onto the sheet E and then onto the task space"></video>
+        <p>Fix the actuators and the robot settles in one held configuration. Write that as \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\). The result is a square map from actuators to task, defined on held configurations only, and classic closed-loop IK runs on it.</p>
+        <p class="mono small">\(\dot q_{\mathrm a} = J_{h\circ h_{\mathrm a}}^{-1}\,\Gamma\,\big(\bar x - h\circ h_{\mathrm a}(q_{\mathrm a})\big)\)</p>
+        <img src="img/scheme_statics_first.jpg" alt="Block diagram: the task error is mapped through the inverse Jacobian of the actuators-to-task map and integrated into actuator coordinates; the passive coordinates follow from the statics">
+        <dl>
+          <dt>Needs</dt><dd>an explicit solution of the statics, \(\bar q_{\mathrm u}(q_{\mathrm a})\)</dd>
+          <dt>Gives</dt><dd>a light loop in \(m\) dimensions; every intermediate shape is held</dd>
+        </dl>
+        <details>
+          <summary>Watch the full explainer (3 min, includes a side note for soft roboticists)</summary>
+          <video src="media/explainer_solve_statics_first.mp4" poster="media/explainer_solve_statics_first.jpg" controls preload="none" playsinline></video>
+        </details>
+      </article>
+      <article class="card">
+        <p class="tag s2">Make the statics a constraint</p>
+        <video src="media/flow_3D_constraint.mp4" poster="media/flow_3D_constraint.jpg" autoplay muted loop playsinline aria-label="Trajectories from arbitrary starting shapes converging onto E and to the target"></video>
+        <p>When \(G_{\mathrm u}=0\) cannot be solved for \(q_{\mathrm u}\), treat it as a second task. Ask both the task error and \(G_{\mathrm u}\) to decay exponentially; at each step that gives a linear system in \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\).</p>
+        <p class="mono small">\(\dot q = P_{\mathcal E} J_{\mathrm a}^{-1}\Gamma_Z(\bar x - h) - P_Z H_{\mathrm{uu}}^{-1}\Gamma_E G_{\mathrm u}\)</p>
+        <img src="img/scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_Z, summed and integrated">
+        <dl>
+          <dt>Needs</dt><dd>gradients of \(h\) and \(G_{\mathrm u}\); \(J_{\mathrm a}\) invertible</dd>
+          <dt>Gives</dt><dd>works from any start, no case-by-case derivation; heavier per step</dd>
+        </dl>
+        <details>
+          <summary>Watch the full explainer (2 min)</summary>
+          <video src="media/explainer_statics_as_constraint.mp4" poster="media/explainer_statics_as_constraint.jpg" controls preload="none" playsinline></video>
+        </details>
+      </article>
+    </div>
+  </section>
+
+  <section id="playground-section" aria-labelledby="pg-title">
+    <p class="eyebrow">Interactive · runs in your browser</p>
+    <h2 id="pg-title">Try it: the tendon-driven arm</h2>
+    <p class="prose">This is the running example of the paper: a double pendulum with one tendon, joint springs and gravity. Pick a strategy and press Run. Drag the target on the left, or click in the configuration space on the right to choose where the loop starts. Set gravity to zero and \(\mathcal{E}\) becomes a straight line.</p>
+    <div class="panel" id="playground">
+      <div class="bar">
+        <div class="seg" role="group" aria-label="Strategy">
+          <button type="button" data-algo="1" aria-pressed="false">Solve the statics first</button>
+          <button type="button" data-algo="2" aria-pressed="true">Statics as a constraint</button>
+        </div>
+        <button type="button" class="act primary" id="pg-run" aria-pressed="false">Run</button>
+        <button type="button" class="act" id="pg-reset">Reset start</button>
+        <label class="check"><input type="checkbox" id="pg-settle" checked> Show where the arm settles</label>
+      </div>
+      <div class="views">
+        <div class="view"><canvas id="pg-arm" aria-label="The arm, the target line and the trace of the tip"></canvas><span class="lab">The arm. Grey ghost: where it settles if the tendon stays at its current length.</span></div>
+        <div class="view"><canvas id="pg-cs" aria-label="Configuration space with the held configurations E and the target set"></canvas><span class="lab">Configuration space \((q_1, q_2)\). Click to choose the start.</span></div>
+      </div>
+      <div class="readout" aria-live="polite">
+        <span class="pill" id="pg-state" data-state="bad">Neither held nor at the target</span>
+        <span>task error <span class="num" id="pg-ex">0</span></span>
+        <span>statics residual \(|G_{\mathrm u}|\) <span class="num" id="pg-gu">0</span></span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="pg-x">Target \(\bar x\) <output id="pg-x-v">1.20</output></label><input type="range" id="pg-x" min="-1.9" max="1.9" step="0.01" value="1.2"></div>
+        <div class="ctl"><label for="pg-g">Gravity \(g\) <output id="pg-g-v">9.8</output></label><input type="range" id="pg-g" min="0" max="15" step="0.1" value="9.81"></div>
+        <div class="ctl"><label for="pg-k1">Spring, joint 1 <output id="pg-k1-v">0</output></label><input type="range" id="pg-k1" min="0" max="20" step="1" value="0"></div>
+        <div class="ctl"><label for="pg-k2">Spring, joint 2 <output id="pg-k2-v">10</output></label><input type="range" id="pg-k2" min="0" max="20" step="1" value="10"></div>
+        <div class="ctl"><label for="pg-th">Tendon routing \(\theta\) <output id="pg-th-v">23°</output></label><input type="range" id="pg-th" min="0" max="90" step="0.5" value="22.5"></div>
+      </div>
+      <p class="hint">Things to try: start "Solve the statics first" and watch the arm stay held the whole way. Switch to "Statics as a constraint" and start from a point far from \(\mathcal{E}\). Move the target until the tendon can no longer move the tip and the loop reports a singularity.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="s3-title">
+    <p class="eyebrow">Interactive · drag to rotate</p>
+    <h2 id="s3-title">A sheet in three dimensions</h2>
+    <p class="prose">With three joints and two tendons, the configuration space is three-dimensional and \(\mathcal{E}\) is a two-dimensional sheet inside it. The view uses actuation coordinates: two directions set by the tendons, one direction they do not fix. Launch trajectories of either strategy and watch where they go.</p>
+    <div class="panel" id="sheet3d">
+      <div class="bar">
+        <button type="button" class="act primary" id="s3-on">Start on \(\mathcal{E}\) · solve the statics first</button>
+        <button type="button" class="act" id="s3-any">Start anywhere · statics as a constraint</button>
+        <button type="button" class="act" id="s3-clear">Clear</button>
+        <label class="check"><input type="checkbox" id="s3-flat"> Show the flat sheet (fully actuated picture)</label>
+      </div>
+      <div class="views3">
+        <div class="view"><canvas id="s3-canvas" style="aspect-ratio: 16 / 10;" aria-label="Three-dimensional view of the sheet E, the target curve and trajectories"></canvas></div>
+        <div class="view"><canvas id="s3-arm" style="aspect-ratio: 16 / 10;" aria-label="The three-joint arm for each launched trajectory"></canvas><span class="lab">The arm, one colour per trajectory.</span></div>
+      </div>
+      <div class="legend">
+        <span><span class="sw" style="background: var(--held);"></span>sheet \(\mathcal{E}\), coloured by \(q_{\mathrm u}\)</span>
+        <span><span class="sw" style="background: var(--actuator);"></span>lines of constant actuation</span>
+        <span><span class="sw" style="background: var(--target);"></span>configurations with \(h(q)=\bar x\)</span>
+        <span><span class="sw" style="background: var(--fg);"></span>circle: held solution</span>
+      </div>
+      <div class="controls">
+        <div class="ctl"><label for="s3-g">Gravity \(g\) <output id="s3-g-v">9.8</output></label><input type="range" id="s3-g" min="0" max="15" step="0.1" value="9.81"></div>
+      </div>
+      <p class="hint">The \(q_{\mathrm u}\) axis is stretched so the shape of the sheet is visible. Set gravity to zero and switch on the flat sheet: they coincide.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="soft">
+    <p class="eyebrow">Side note</p>
+    <h2 id="soft">If you work in soft robotics</h2>
+    <div class="pair" style="align-items: center;">
+      <figure><video src="media/flat_sheet_to_E.mp4" poster="media/flat_sheet_to_E.jpg" autoplay muted loop playsinline aria-label="The flat sheet of the fully actuated picture morphing into the sheet E"></video></figure>
+      <div class="prose" style="display: flex; flex-direction: column; gap: 14px;">
+        <p>The actuator, configuration and task spaces of continuum robotics, with an actuation model between the first two, may look familiar. That picture gives the three spaces the same dimension, so the actuators alone fix the configuration.</p>
+        <p>In reality the configuration space is much larger. The held configurations form a set \(\mathcal{E}\) with the dimension of the actuators, and the actuators-to-task map lives on it. Without gravity and with uniform segments, \(\mathcal{E}\) is exactly the flat sheet of the familiar picture. That is a good reason why the fully actuated approximation has worked so well in practice.</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="sims">
+    <p class="eyebrow">Results</p>
+    <h2 id="sims">Simulations of a soft arm</h2>
+    <p class="prose">A planar piecewise-constant-curvature arm with two actuated segments and five curvature elements, in a stiff and in a soft regime, with each strategy run open-loop and with task-space feedback.</p>
+    <div class="ph-grid">
+      <div class="ph"><b>Stiff arm</b>Simulation video coming soon</div>
+      <div class="ph"><b>Soft arm, bending under its own weight</b>Simulation video coming soon</div>
+      <div class="ph"><b>Feedforward vs feedback</b>Simulation video coming soon</div>
+    </div>
+  </section>
+
+  <section id="guide" aria-labelledby="guide-title">
+    <p class="eyebrow">Practitioner's guide</p>
+    <h2 id="guide-title">Using the algorithms on your robot</h2>
+    <div class="guide">
+      <div>
+        <h3>1. Match the math to your robot</h3>
+        <dl class="terms">
+          <dt>\(q\)</dt><dd>the full configuration: joint angles, curvatures, shape parameters</dd>
+          <dt>\(q_{\mathrm a}\)</dt><dd>actuated coordinates: motor angles, tendon lengths, chamber volumes</dd>
+          <dt>\(q_{\mathrm u}\)</dt><dd>what still moves if you block the actuators: passive joints, curvature differences within a segment</dd>
+          <dt>\(c(q)\)</dt><dd>the map \(q \mapsto (q_{\mathrm a}, q_{\mathrm u})\); in practice choose \(q_{\mathrm a}\) from the actuators and add enough \(q_{\mathrm u}\) to fix the shape</dd>
+          <dt>\(x = h(q)\)</dt><dd>the task: tip position, pose, centre of mass, contact point</dd>
+          <dt>\(G(q)\)</dt><dd>potential forces (elastic, gravitational): what remains of the dynamics after removing all terms in \(\ddot q\), \(\dot q\) and \(\tau\)</dd>
+          <dt>\(G_{\mathrm u}\)</dt><dd>the part of \(G\) along \(q_{\mathrm u}\): forces the actuators cannot counteract. Held configurations satisfy \(G_{\mathrm u}=0\)</dd>
+        </dl>
+      </div>
+      <div>
+        <h3>2. Pick the strategy</h3>
+        <p class="question">Can you solve \(G_{\mathrm u}(q_{\mathrm a}, q_{\mathrm u}) = 0\) for \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\), and evaluate it quickly?</p>
+        <ul class="tight">
+          <li><b>Yes:</b> solve the statics first. Simpler, cheaper per step, easier to tune.</li>
+          <li><b>No:</b> make the statics a constraint. More general and needs no case-by-case derivation, at the price of more computation and more sensitivity to poor conditioning.</li>
+        </ul>
+        <h3>3. Practical remarks</h3>
+        <ul class="tight">
+          <li>Near singularities, use a damped inverse in place of a plain one, with either strategy.</li>
+          <li>If \(c^{-1}\) is hard to derive symbolically, integrate \(\dot q\) from \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\) using the inverse Jacobian of \(c\).</li>
+          <li>\(\partial G_{\mathrm u}/\partial q_{\mathrm a}\) and \(\partial G_{\mathrm u}/\partial q_{\mathrm u}\) can be approximated by finite differences.</li>
+          <li>The loop produces references for the actuated coordinates; a low-level controller tracks them. For a stable enough system, a PID on the actuator side suffices.</li>
+          <li>Start "statics as a constraint" from a held or nearly held configuration, for example the robot's current one. It converges much faster.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="code-row">
+      <div>
+        <h3>Solve the statics first</h3>
+<pre><code>define  q̄u(qa)          explicit equilibrium map
+        f(qa) = h(c⁻¹(qa, q̄u(qa)))
+        J(qa) = ∂f/∂qa
+choose  Γ ≻ 0, tolerance εx, step Δt, initial qa
+while ‖x̄ − f(qa)‖ > εx
+    ex ← x̄ − f(qa)
+    qa ← qa + Δt · J(qa)⁻¹ Γ ex
+    qu ← q̄u(qa)</code></pre>
+      </div>
+      <div>
+        <h3>Make the statics a constraint</h3>
+<pre><code>define  f(qa, qu) = h(c⁻¹(qa, qu))
+        Ja, Ju       task Jacobians
+        Hua, Huu     derivatives of Gu
+choose  ΓZ, ΓE ≻ 0, tolerances, step Δt, initial (qa, qu)
+while ‖x̄ − f‖ > εx  or  ‖Gu‖ > εE
+    ex ← x̄ − f,   eE ← −Gu
+    PE ← [I; −Huu⁻¹Hua] (I − Ja⁻¹Ju Huu⁻¹Hua)⁻¹
+    PZ ← [−Ja⁻¹Ju; I] (I − Huu⁻¹Hua Ja⁻¹Ju)⁻¹
+    (qa, qu) ← (qa, qu) + Δt · (PE Ja⁻¹ΓZ ex + PZ Huu⁻¹ΓE eE)</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="code">
+    <p class="eyebrow">Code</p>
+    <h2 id="code">Implementation</h2>
+    <div class="ph" style="aspect-ratio: auto; min-height: 120px;"><b>MATLAB implementation of both strategies</b>Repository link coming soon</div>
+  </section>
+
+  <section id="bibtex" aria-labelledby="bib-title">
+    <h2 id="bib-title">Citation</h2>
+    <div class="bib">
+<pre id="bib-text"><code>@article{dellasantina2026underactuated,
+  title   = {Pushing the boundaries of actuators-to-task kinematic inversion:
+             from fully actuated to underactuated (soft) robots},
+  author  = {Della Santina, Cosimo},
+  journal = {The International Journal of Robotics Research},
+  year    = {2026},
+  note    = {In press; volume, pages and DOI to follow}
+}</code></pre>
+      <button type="button" class="act" id="bib-copy">Copy</button>
+    </div>
+  </section>
+
+  <footer>Animations made with Manim Community Edition. The interactive demos re-implement the paper's examples in JavaScript for illustration.</footer>
+</div>
+
+<script>
+  document.getElementById("bib-copy").addEventListener("click", function () {
+    const b = this, t = document.getElementById("bib-text").innerText;
+    const done = () => { b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1600); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(done).catch(() => { const r = document.createRange(); r.selectNodeContents(document.getElementById("bib-text")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); });
+  });
+</script>
+<script src="js/playground.js"></script>
+<script src="js/sheet3d.js"></script>
+
+</body>
+</html>
