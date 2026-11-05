@@ -15,11 +15,11 @@
 <meta property="og:title" content="Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots">
 <meta property="og:description" content="Project page of the IJRR paper by Cosimo Della Santina on closed-loop inverse kinematics for underactuated and soft robots: explainer videos, interactive demos and a practitioner's guide.">
 <meta property="og:url" content="https://dzcosimo.github.io/underactuated-ik/">
-<meta property="og:image" content="https://dzcosimo.github.io/underactuated-ik/teaser_flow_on_E.jpg">
+<meta property="og:image" content="https://dzcosimo.github.io/underactuated-ik/hero_problem.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots">
 <meta name="twitter:description" content="Project page of the IJRR paper by Cosimo Della Santina on closed-loop inverse kinematics for underactuated and soft robots: explainer videos, interactive demos and a practitioner's guide.">
-<meta name="twitter:image" content="https://dzcosimo.github.io/underactuated-ik/teaser_flow_on_E.jpg">
+<meta name="twitter:image" content="https://dzcosimo.github.io/underactuated-ik/hero_problem.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,500;7..72,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -81,6 +81,8 @@
   figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
   video, .frame { width: 100%; max-width: 100%; display: block; border-radius: 10px; background: var(--stage); aspect-ratio: 16 / 9; }
   figcaption { font-size: 15px; color: var(--muted); max-width: 80ch; }
+  .paperfig { background: #ffffff; border-radius: 12px; padding: clamp(10px, 2vw, 22px); border: 1px solid var(--rule); }
+  .paperfig img { width: 100%; display: block; }
   .tldr { font-family: var(--font-display); font-size: clamp(19px, 2.2vw, 23px); line-height: 1.5; max-width: 60ch; }
 
   /* two strategies */
@@ -168,14 +170,24 @@
       <a class="btn" href="#bibtex">BibTeX</a>
     </nav>
     <figure>
-      <video src="teaser_flow_on_E.mp4" poster="teaser_flow_on_E.jpg" autoplay muted loop playsinline aria-label="A three-joint arm converging from five starting shapes to one held configuration at the target, next to the sheet E of held configurations"></video>
-      <figcaption>A three-joint arm driven by two tendons. Every shape it can hold lies on the sheet \(\mathcal{E}\). Running closed-loop inverse kinematics on that sheet brings five starting shapes to one held configuration at the target \(\bar x\).</figcaption>
+      <video src="hero_problem.mp4" poster="hero_problem.jpg" autoplay muted loop playsinline aria-label="A tendon-driven double pendulum reaches the target with a shape it cannot hold, sags under gravity, and then reaches the target with a held shape on the set E"></video>
+      <figcaption>A tendon-driven double pendulum. Plain geometric inverse kinematics finds a shape that reaches the target \(\bar x\), but the arm cannot hold it: gravity and springs pull the passive joint away. The shapes the arm can hold form the set \(\mathcal{E}\), and the solution has to lie on it.</figcaption>
     </figure>
   </header>
 
   <section aria-labelledby="tldr">
     <h2 id="tldr" class="eyebrow" style="font-family: var(--font-ui); font-size: 13px; font-weight: 400;">In short</h2>
     <p class="tldr">An underactuated robot cannot hold every configuration. Inverse kinematics therefore has to find a configuration that reaches the target and that the robot can actually hold. The paper gives two closed-loop algorithms that do both, with conditions under which they converge.</p>
+  </section>
+
+
+  <section aria-labelledby="systems">
+    <p class="eyebrow">Fewer actuators than degrees of freedom</p>
+    <h2 id="systems">The robots we have in mind</h2>
+    <figure>
+      <div class="paperfig"><img src="fig1_systems.jpg" alt="Three underactuated robots: a two-finger gripper driven by four tendons holding a ball, a humanoid balancing on one tip while regulating its centre of mass, and a tendon-driven continuum soft robot reaching an object with its tip"></div>
+      <figcaption>(a) A two-finger gripper driven by four tendons manipulates a ball: 7 degrees of freedom, 4 actuators, a 3-dimensional task. (b) A humanoid balancing on its tip regulates its centre of mass: 11 degrees of freedom, 10 actuators, a 2-dimensional task. (c) A continuum soft robot driven by three tendons positions its tip: infinitely many degrees of freedom, 3 actuators, a 3-dimensional task. In all three, inverse kinematics must return a configuration the robot can hold.</figcaption>
+    </figure>
   </section>
 
   <section aria-labelledby="abstract" class="prose">
