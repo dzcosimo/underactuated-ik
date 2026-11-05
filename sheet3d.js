@@ -150,7 +150,7 @@
     // axes
     const ax = [[[-1.6, 0, 0], [1.7, 0, 0], "q_a1"], [[0, -1.6, 0], [0, 1.7, 0], "q_a2"], [[0, 0, -0.55], [0, 0, 0.62], "q_u"]];
     c.lineWidth = 1.2 * d; c.strokeStyle = css("--muted"); c.fillStyle = css("--muted"); c.font = `${13 * d}px ${css("--font-ui")}`;
-    for (const [a, b, lab] of ax) { const pa = proj(a, w, h), pb = proj(b, w, h); c.beginPath(); c.moveTo(pa[0], pa[1]); c.lineTo(pb[0], pb[1]); c.stroke(); c.fillText(lab.replace("_", " "), pb[0] + 5 * d, pb[1]); }
+    for (const [a, b, lab] of ax) { const pa = proj(a, w, h), pb = proj(b, w, h); c.beginPath(); c.moveTo(pa[0], pa[1]); c.lineTo(pb[0], pb[1]); c.stroke(); const off = { q_a1: [6, 4], q_a2: [6, -8], q_u: [-30, -8] }[lab]; c.fillText({ q_a1: "q\u2090\u2081", q_a2: "q\u2090\u2082", q_u: "q\u1d64" }[lab], pb[0] + off[0] * d, pb[1] + off[1] * d); }
     // surface quads, painter's order
     const quads = [];
     const light = [-0.4, -0.5, 0.77];

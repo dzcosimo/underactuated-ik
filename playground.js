@@ -7,7 +7,7 @@
 
   // ---------- model ----------
   const P = { l1: 1, l2: 1, m1: 1, m2: 1, g: 9.81, k1: 0, k2: 10, th: Math.PI / 8 };
-  const S = { q: [0, 0], xbar: 1.2, algo: 2, running: false, trail: [], gain: 1.5, showSettle: true, msg: "" };
+  const S = { q: [0, 0], xbar: 1.2, algo: 0, running: false, trail: [], gain: 1.5, showSettle: true, msg: "" };
   var H = { ex: [], gu: [] };
 
   const G = (q) => {
@@ -22,6 +22,9 @@
   const qaOf = (q) => { const a = A(); return a[0] * q[0] + a[1] * q[1]; };
   const grad = (f, q, e = 1e-6) => [(f([q[0] + e, q[1]]) - f([q[0] - e, q[1]])) / (2 * e),
                                     (f([q[0], q[1] + e]) - f([q[0], q[1] - e])) / (2 * e)];
+
+  // stiffness along the passive direction with the tendon locked (> 0: stable equilibrium)
+  const kD = (q) => { const d = D(), g = grad(Gu, q); return -(g[0] * d[0] + g[1] * d[1]); };
 
   // held configuration with the same tendon length as q: solve Gu = 0 along the passive direction
   function settle(q, sGuess) {
@@ -75,6 +78,18 @@
     v = Math.max(-2.5, Math.min(2.5, v));
     const n = f(qa + dt * v); if (!n) return false;
     sMem = n.s; S.q = n.q; S.msg = "";
+    return true;
+  }
+  function stepPlain(dt) {
+    // classic inverse kinematics: moves q as if every joint were actuated, ignoring the statics
+    // weighted pseudoinverse (W = diag(1, 0.1)): the task is redundant; this choice mostly moves the
+    // shoulder and keeps the elbow bend, as a rigid-arm IK would
+    const W = [1, 0.1], gx = grad(X, S.q), n2 = W[0] * gx[0] ** 2 + W[1] * gx[1] ** 2;
+    if (n2 < 1e-8) { S.msg = "Singular: the tip cannot move along x here"; return false; }
+    const r = S.gain * (S.xbar - X(S.q));
+    let v = [W[0] * gx[0] * r / n2, W[1] * gx[1] * r / n2];
+    const n = Math.hypot(v[0], v[1]); if (n > 2.5) v = [v[0] * 2.5 / n, v[1] * 2.5 / n];
+    S.q = [S.q[0] + dt * v[0], S.q[1] + dt * v[1]]; S.msg = "";
     return true;
   }
   function stepAlg2(dt) {
@@ -218,9 +233,9 @@
     const ex = Math.abs(S.xbar - X(S.q)), gu = Math.abs(Gu(S.q));
     $("pg-ex").textContent = ex.toFixed(3);
     $("pg-gu").textContent = gu.toFixed(3);
-    const held = gu < 0.05, there = ex < 0.005;
+    const eq = gu < 0.05, held = eq && kD(S.q) > 0, there = ex < 0.005;
     const pill = $("pg-state");
-    pill.textContent = S.msg ? S.msg : held && there ? "At the target and held" : held ? "Held, not at the target" : there ? "At the target, but the arm cannot hold this shape" : "Neither held nor at the target";
+    pill.textContent = S.msg ? S.msg : held && there ? "At the target and held" : eq && there ? "At the target, on an unstable equilibrium" : held ? "Held, not at the target" : eq ? "On an unstable equilibrium" : there ? "At the target, but the arm cannot hold this shape" : "Neither held nor at the target";
     pill.dataset.state = S.msg ? "warn" : held && there ? "ok" : held ? "mid" : "bad";
   };
   const draw = () => { drawArm(); drawCS(); readout(); drawPlot(); };
@@ -240,12 +255,13 @@
   root.querySelectorAll("[data-algo]").forEach((b) => b.addEventListener("click", () => {
     S.algo = +b.dataset.algo;
     root.querySelectorAll("[data-algo]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    if (S.algo === 0) { setRun(false); S.q = [0, -1]; S.msg = ""; }
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
     S.trail = [S.q.slice()]; clearH(); draw();
   }));
   const runBtn = $("pg-run");
   const setRun = (r) => { S.running = r; runBtn.textContent = r ? "Pause" : "Run"; runBtn.setAttribute("aria-pressed", r ? "true" : "false"); };
-  runBtn.addEventListener("click", () => { setRun(!S.running); if (S.running) { S.trail = [S.q.slice()]; clearH(); loop(); } });
+  runBtn.addEventListener("click", () => { S.msg = ""; setRun(!S.running); if (S.running) { S.trail = [S.q.slice()]; clearH(); loop(); } });
   $("pg-reset").addEventListener("click", () => { setRun(false); S.q = [1.25, -1.0]; if (S.algo === 1) { const st = settle(S.q); if (st) S.q = st.q; } S.trail = [S.q.slice()]; clearH(); sMem = undefined; S.msg = ""; draw(); });
   $("pg-settle").addEventListener("change", (e) => { S.showSettle = e.target.checked; draw(); });
 
@@ -289,11 +305,11 @@
     const py = (v) => { const l = Math.log10(Math.max(v, 1e-4)); return T + (h - T - B) * (hi - Math.min(hi, l)) / (hi - lo); };
     c.strokeStyle = css("--rule"); c.lineWidth = 1 * dpr; c.font = `${12 * dpr}px ${css("--font-ui")}`; c.fillStyle = css("--muted");
     for (const e of [1, 0, -1, -2, -3, -4]) { const y = py(10 ** e); c.beginPath(); c.moveTo(L, y); c.lineTo(w - R, y); c.stroke(); c.fillText(e === 0 ? "1" : e === 1 ? "10" : "1e" + e, 6 * dpr, y + 4 * dpr); }
-    c.fillText("time →", w - R - 46 * dpr, h - 6 * dpr);
+    if (w / dpr > 520) c.fillText("time →", w - R - 46 * dpr, h - 6 * dpr);
     const line = (arr, col) => { c.strokeStyle = col; c.lineWidth = 2.2 * dpr; c.beginPath(); arr.forEach((v, i) => i ? c.lineTo(px(i), py(v)) : c.moveTo(px(i), py(v))); c.stroke(); };
     line(H.ex, css("--target")); line(H.gu, css("--held"));
     c.fillStyle = css("--target"); c.fillText("task error |x̄ − x|", L + 8 * dpr, h - 6 * dpr);
-    c.fillStyle = css("--held"); c.fillText("statics residual |Gᵤ|", L + 150 * dpr, h - 6 * dpr);
+    c.fillStyle = css("--held"); c.fillText("statics residual |Gᵤ|", L + 124 * dpr, h - 6 * dpr);
   }
 
   // ---------- guided experiments ----------
@@ -308,33 +324,26 @@
       if (a < 1) requestAnimationFrame(step); };
     requestAnimationFrame(step);
   }
-  const PRESETS = {
-    fail() { setRun(false); setDefaults(); S.algo = 2; S.q = [1.2531, -1.0]; S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw(); setTimeout(sagAnim, 900); },
-    alg1() { setRun(false); setDefaults(); S.q = [0, 0]; setAlgo(1); S.trail = [S.q.slice()]; clearH(); draw(); runBtn.click(); },
-    alg2() { setRun(false); setDefaults(); setAlgo(2); S.q = [1.8, -1.2]; S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw(); runBtn.click(); },
-  };
-  root.querySelectorAll("[data-preset]").forEach((b) => b.addEventListener("click", () => {
-    root.querySelectorAll("[data-preset]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
-    PRESETS[b.dataset.preset]();
-  }));
   new ResizeObserver(drawPlot).observe(root.querySelector("#pg-plot"));
 
   let raf = null;
   function loop() {
     if (!S.running) return;
     for (let k = 0; k < 2; k++) {
-      const ok = S.algo === 1 ? stepAlg1(0.012) : stepAlg2(0.012);
+      const ok = S.algo === 0 ? stepPlain(0.012) : S.algo === 1 ? stepAlg1(0.012) : stepAlg2(0.012);
       if (!ok) { setRun(false); break; }
     }
     S.trail.push(S.q.slice()); if (S.trail.length > 1500) S.trail.shift(); recordH();
-    const done = Math.abs(S.xbar - X(S.q)) < 1e-4 && Math.abs(Gu(S.q)) < 1e-3;
+    const ex = Math.abs(S.xbar - X(S.q));
+    const done = S.algo === 0 ? ex < 1e-4 : ex < 1e-4 && Math.abs(Gu(S.q)) < 1e-3;
     draw();
-    if (done) { setRun(false); return; }
+    if (done) { setRun(false); if (S.algo === 0) setTimeout(sagAnim, 700); return; }
     raf = requestAnimationFrame(loop);
   }
 
-  // initial state: the geometric solution from the first video, off E
-  S.q = [1.2531, -1.0]; S.trail = [S.q.slice()]; clearH();
+  // initial state: plain IK selected, elbow bent, nothing run yet
+  S.msg = "Pick a method and press Run";
+  S.q = [0, -1.0]; S.trail = [S.q.slice()]; clearH();
   recomputeCurves(); draw();
   new ResizeObserver(draw).observe(armCv); new ResizeObserver(draw).observe(csCv);
   const mq = window.matchMedia("(prefers-color-scheme: dark)"); mq.addEventListener && mq.addEventListener("change", draw);
