@@ -207,12 +207,12 @@
 
   <section aria-labelledby="strategies">
     <p class="eyebrow">Explainers 2 and 3</p>
-    <h2 id="strategies">Two ways to stay on \(\mathcal{E}\)</h2>
+    <h2 id="strategies">Two algorithms to stay on \(\mathcal{E}\)</h2>
     <div class="pair">
       <article class="card">
-        <p class="tag s1">Solve the statics first</p>
+        <p class="tag s1">Algorithm 1 · statics solved beforehand</p>
         <video src="two_maps_3D.mp4" poster="two_maps_3D.jpg" autoplay muted loop playsinline aria-label="Actuator grid mapped onto the sheet E and then onto the task space"></video>
-        <p>Fix the actuators and the robot settles in one held configuration. Write that as \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\). The result is a square map from actuators to task, defined on held configurations only, and classic closed-loop IK runs on it.</p>
+        <p>Fix the actuators and the robot settles in one held configuration. Solve the statics beforehand and write that as \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\). The result is a square map from actuators to task, defined on held configurations only, and classic closed-loop IK runs on it.</p>
         <p class="mono small">\(\dot q_{\mathrm a} = J_{h\circ h_{\mathrm a}}^{-1}\,\Gamma\,\big(\bar x - h\circ h_{\mathrm a}(q_{\mathrm a})\big)\)</p>
         <img src="scheme_statics_first.jpg" alt="Block diagram: the task error is mapped through the inverse Jacobian of the actuators-to-task map and integrated into actuator coordinates; the passive coordinates follow from the statics">
         <dl>
@@ -225,9 +225,9 @@
         </details>
       </article>
       <article class="card">
-        <p class="tag s2">Make the statics a constraint</p>
+        <p class="tag s2">Algorithm 2 · statics solved online</p>
         <video src="flow_3D_constraint.mp4" poster="flow_3D_constraint.jpg" autoplay muted loop playsinline aria-label="Trajectories from arbitrary starting shapes converging onto E and to the target"></video>
-        <p>When \(G_{\mathrm u}=0\) cannot be solved for \(q_{\mathrm u}\), treat it as a second task. Ask both the task error and \(G_{\mathrm u}\) to decay exponentially; at each step that gives a linear system in \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\).</p>
+        <p>When \(G_{\mathrm u}=0\) cannot be solved for \(q_{\mathrm u}\) in advance, the loop solves it online. It asks both the task error and \(G_{\mathrm u}\) to decay exponentially, so the statics hold asymptotically; at each step that gives a linear system in \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\).</p>
         <p class="mono small">\(\dot q = P_{\mathcal E} J_{\mathrm a}^{-1}\Gamma_Z(\bar x - h) - P_Z H_{\mathrm{uu}}^{-1}\Gamma_E G_{\mathrm u}\)</p>
         <img src="scheme_statics_as_constraint.jpg" alt="Block diagram with two parallel paths: a task path through the inverse actuated Jacobian and the lift P_E, a feasibility path through the inverse Hessian block and the lift P_Z, summed and integrated">
         <dl>
@@ -249,8 +249,8 @@
     <div class="panel" id="playground">
       <div class="bar">
         <div class="seg" role="group" aria-label="Strategy">
-          <button type="button" data-algo="1" aria-pressed="false">Solve the statics first</button>
-          <button type="button" data-algo="2" aria-pressed="true">Statics as a constraint</button>
+          <button type="button" data-algo="1" aria-pressed="false">Algorithm 1 · statics beforehand</button>
+          <button type="button" data-algo="2" aria-pressed="true">Algorithm 2 · statics online</button>
         </div>
         <button type="button" class="act primary" id="pg-run" aria-pressed="false">Run</button>
         <button type="button" class="act" id="pg-reset">Reset start</button>
@@ -272,7 +272,7 @@
         <div class="ctl"><label for="pg-k2">Spring, joint 2 <output id="pg-k2-v">10</output></label><input type="range" id="pg-k2" min="0" max="20" step="1" value="10"></div>
         <div class="ctl"><label for="pg-th">Tendon routing \(\theta\) <output id="pg-th-v">23°</output></label><input type="range" id="pg-th" min="0" max="90" step="0.5" value="22.5"></div>
       </div>
-      <p class="hint">Things to try: start "Solve the statics first" and watch the arm stay held the whole way. Switch to "Statics as a constraint" and start from a point far from \(\mathcal{E}\). Move the target until the tendon can no longer move the tip and the loop reports a singularity.</p>
+      <p class="hint">Things to try: run Algorithm 1 and watch the arm stay held the whole way. Switch to Algorithm 2 and start from a point far from \(\mathcal{E}\). Move the target until the tendon can no longer move the tip and the loop reports a singularity.</p>
     </div>
   </section>
 
@@ -282,8 +282,8 @@
     <p class="prose">With three joints and two tendons, the configuration space is three-dimensional and \(\mathcal{E}\) is a two-dimensional sheet inside it. The view uses actuation coordinates: two directions set by the tendons, one direction they do not fix. Launch trajectories of either strategy and watch where they go.</p>
     <div class="panel" id="sheet3d">
       <div class="bar">
-        <button type="button" class="act primary" id="s3-on">Start on \(\mathcal{E}\) · solve the statics first</button>
-        <button type="button" class="act" id="s3-any">Start anywhere · statics as a constraint</button>
+        <button type="button" class="act primary" id="s3-on">Algorithm 1 · start on \(\mathcal{E}\)</button>
+        <button type="button" class="act" id="s3-any">Algorithm 2 · start anywhere</button>
         <button type="button" class="act" id="s3-clear">Clear</button>
         <label class="check"><input type="checkbox" id="s3-flat"> Show the flat sheet (fully actuated picture)</label>
       </div>
@@ -347,8 +347,8 @@
         <h3>2. Pick the strategy</h3>
         <p class="question">Can you solve \(G_{\mathrm u}(q_{\mathrm a}, q_{\mathrm u}) = 0\) for \(q_{\mathrm u} = \bar q_{\mathrm u}(q_{\mathrm a})\), and evaluate it quickly?</p>
         <ul class="tight">
-          <li><b>Yes:</b> solve the statics first. Simpler, cheaper per step, easier to tune.</li>
-          <li><b>No:</b> make the statics a constraint. More general and needs no case-by-case derivation, at the price of more computation and more sensitivity to poor conditioning.</li>
+          <li><b>Yes:</b> Algorithm 1, statics solved beforehand. Simpler, cheaper per step, easier to tune.</li>
+          <li><b>No:</b> Algorithm 2, statics solved online. More general and needs no case-by-case derivation, at the price of more computation and more sensitivity to poor conditioning.</li>
         </ul>
         <h3>3. Practical remarks</h3>
         <ul class="tight">
@@ -356,13 +356,13 @@
           <li>If \(c^{-1}\) is hard to derive symbolically, integrate \(\dot q\) from \((\dot q_{\mathrm a}, \dot q_{\mathrm u})\) using the inverse Jacobian of \(c\).</li>
           <li>\(\partial G_{\mathrm u}/\partial q_{\mathrm a}\) and \(\partial G_{\mathrm u}/\partial q_{\mathrm u}\) can be approximated by finite differences.</li>
           <li>The loop produces references for the actuated coordinates; a low-level controller tracks them. For a stable enough system, a PID on the actuator side suffices.</li>
-          <li>Start "statics as a constraint" from a held or nearly held configuration, for example the robot's current one. It converges much faster.</li>
+          <li>Start Algorithm 2 from a held or nearly held configuration, for example the robot's current one. It converges much faster.</li>
         </ul>
       </div>
     </div>
     <div class="code-row">
       <div>
-        <h3>Solve the statics first</h3>
+        <h3>Algorithm 1 · statics solved beforehand</h3>
 <pre><code>define  q̄u(qa)          explicit equilibrium map
         f(qa) = h(c⁻¹(qa, q̄u(qa)))
         J(qa) = ∂f/∂qa
@@ -373,7 +373,7 @@ while ‖x̄ − f(qa)‖ > εx
     qu ← q̄u(qa)</code></pre>
       </div>
       <div>
-        <h3>Make the statics a constraint</h3>
+        <h3>Algorithm 2 · statics solved online</h3>
 <pre><code>define  f(qa, qu) = h(c⁻¹(qa, qu))
         Ja, Ju       task Jacobians
         Hua, Huu     derivatives of Gu
