@@ -109,6 +109,7 @@
   .simframe { background: #ffffff; border: 1px solid var(--rule); border-radius: 12px; padding: clamp(6px, 1.2vw, 14px); }
   .simframe video { width: 100%; height: auto; display: block; background: #ffffff; max-height: 80vh; object-fit: contain; }
   .simcap { font-size: 15px; color: var(--muted); }
+  details.more-notation > summary { cursor: pointer; font-family: var(--font-ui); font-size: 14px; margin: 4px 0 8px; }
   details.figs > summary { cursor: pointer; font-family: var(--font-ui); font-size: 15px; }
   .summary { font-size: 18px; max-width: 72ch; }
   .btn.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
@@ -124,7 +125,7 @@
   @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .simframe, :root:not([data-theme="light"]) .paperfig { background: #e9edf0; border-color: transparent; } :root:not([data-theme="light"]) .simframe video, :root:not([data-theme="light"]) .paperfig img { filter: brightness(.92); } }
   :root[data-theme="dark"] .simframe, :root[data-theme="dark"] .paperfig { background: #e9edf0; border-color: transparent; }
   :root[data-theme="dark"] .simframe video, :root[data-theme="dark"] .paperfig img { filter: brightness(.92); }
-  @media (max-width: 600px) { .simframe { overflow-x: auto; } .simframe video { width: 760px; max-width: none; max-height: none; } }
+  @media (max-width: 600px) { .card video { margin-inline: -18px; width: calc(100% + 36px); max-width: none; border-radius: 0; } }
   #playground .controls { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
   #sheet3d .controls { max-width: 380px; }
   @media (pointer: coarse) { .simtabs button, .act, .seg button { min-height: 44px; } }
@@ -146,6 +147,8 @@
   .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 16px; }
   .views { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
   .views3 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+  #s3-arm { aspect-ratio: 4 / 5; }
+  @media (max-width: 760px) { #s3-arm { aspect-ratio: 16 / 10; } }
   @media (max-width: 760px) { .views3 { grid-template-columns: 1fr; } }
   .view { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
   .view canvas { width: 100%; aspect-ratio: 1 / 0.85; display: block; border-radius: 10px; border: 1px solid var(--rule); background: var(--bg); touch-action: none; }
@@ -278,13 +281,18 @@
         <dt>\(x = h(q)\), \(\bar x\)</dt><dd>task variable (for example the tip position) and its target</dd>
         <dt>\(G(q)\), \(G_{\mathrm u}\)</dt><dd>potential forces (gravity, springs) and their part along \(q_{\mathrm u}\). In actuation coordinates the actuators push only on \(q_{\mathrm a}\), so nothing balances \(G_{\mathrm u}\): with the actuators locked, the robot stays still only where \(G_{\mathrm u} = 0\). Solving \(G_{\mathrm u} = 0\) is what we call solving the statics</dd>
         <dt>\(\mathcal{E}\)</dt><dd>configurations the robot can hold, that is static equilibria: \(G_{\mathrm u}(q) = 0\). \(\mathcal{E}\) also contains unstable equilibria: with the actuators held, an equilibrium is stable if \(H_{\mathrm{uu}} \succ 0\). Neither algorithm checks this, and a low-level controller acting only on \(q_{\mathrm a}\) cannot stabilize the others (see the dancer, Unstable target)</dd>
-        <dt>\(\bar q_{\mathrm u}(q_{\mathrm a})\), \(h_{\mathrm a}\)</dt><dd>the held \(q_{\mathrm u}\) for given actuators, and the resulting configuration (Algorithm 1)</dd>
+      </dl>
+      <details class="more-notation">
+      <summary>More symbols: Jacobians, Hessian blocks, projectors, gains</summary>
+      <dl>
+        <dt>\(\bar q_{\mathrm u}(q_{\mathrm a})\), \(h_{\mathrm a}\)</dt><dd>the held \(q_{\mathrm u}\) for given actuators, and the resulting configuration (Algorithm 1). The actuators-to-task map is \(h\circ h_{\mathrm a}\)</dd>
         <dt>\(J_{\mathrm a}, J_{\mathrm u}\)</dt><dd>task Jacobians with respect to \(q_{\mathrm a}\) and \(q_{\mathrm u}\)</dd>
         <dt>\(H_{\mathrm{ua}}, H_{\mathrm{uu}}\)</dt><dd>derivatives of \(G_{\mathrm u}\) with respect to \(q_{\mathrm a}\) and \(q_{\mathrm u}\)</dd>
         <dt>\(P_{\mathcal E}, P_Z\)</dt><dd>projectors: \(P_{\mathcal E}\) turns a task correction into a motion that keeps \(G_{\mathrm u}\) unchanged, \(P_Z\) turns a statics correction into a motion that keeps \(h\) unchanged, both to first order (Algorithm 2)</dd>
         <dt>\(\Gamma, \Gamma_Z, \Gamma_E\)</dt><dd>positive-definite gains</dd>
         <dt>dimensions</dt><dd>the formulas assume a task with as many dimensions as actuators, \(m\). With fewer (Fig. 1a, b and the dancer below), inverses become pseudoinverses</dd>
       </dl>
+      </details>
       <p class="small muted">A fuller, robot-oriented version is in the <a href="#guide">practitioner's guide</a>.</p>
     </div>
     <div class="pair">
@@ -331,7 +339,7 @@
         <li>Run Algorithm 1: every reference along the way lies on \(\mathcal{E}\).</li>
         <li>Click far from \(\mathcal{E}\) in the configuration space, then run Algorithm 2: both errors decay in the plot.</li>
         <li>Set gravity to zero: \(\mathcal{E}\) becomes a straight line.</li>
-        <li>With Algorithm 1, push the target towards the edge of the workspace until the loop reports a singularity.</li>
+        <li>Run Algorithm 1, then drag the target: the solution slides along \(\mathcal{E}\).</li>
       </ol>
       <div class="bar">
         <div class="seg" role="group" aria-label="Strategy">
@@ -344,15 +352,15 @@
         <label class="check"><input type="checkbox" id="pg-settle" checked> Show where the arm settles</label>
       </div>
       <div class="views">
-        <div class="view"><canvas id="pg-arm" aria-label="The arm, the target line and the trace of the tip"></canvas><span class="lab">The arm. Grey ghost: where it settles if the tendon stays at its current length.</span></div>
-        <div class="view"><canvas id="pg-cs" aria-label="Configuration space with the held configurations E and the target set"></canvas><span class="lab">Configuration space \((q_1, q_2)\). Click to choose the start.</span></div>
+        <div class="view"><canvas id="pg-arm" role="img" aria-label="The arm, the target line and the trace of the tip"></canvas><span class="lab">The arm. Grey ghost: where it settles if the tendon stays at its current length.</span></div>
+        <div class="view"><canvas id="pg-cs" role="img" tabindex="0" aria-label="Configuration space with the held configurations E and the target set"></canvas><span class="lab">Configuration space \((q_1, q_2)\). Click, or focus and use the arrow keys, to choose the start.</span></div>
       </div>
       <div class="readout" aria-live="polite">
         <span class="pill" id="pg-state" data-state="bad">Neither held nor at the target</span>
         <span>task error <span class="num" id="pg-ex">0</span></span>
         <span>statics residual \(|G_{\mathrm u}|\) <span class="num" id="pg-gu">0</span></span>
       </div>
-      <canvas id="pg-plot" aria-label="Task error and statics residual over time, logarithmic scale"></canvas>
+      <canvas id="pg-plot" role="img" aria-label="Task error and statics residual over time, logarithmic scale"></canvas>
       <div class="controls">
         <div class="ctl"><label for="pg-x">Target \(\bar x\) <output id="pg-x-v">1.20</output></label><input type="range" id="pg-x" min="-1.9" max="1.9" step="0.01" value="1.2"></div>
         <div class="ctl"><label for="pg-g">Gravity \(g\) <output id="pg-g-v">9.8</output></label><input type="range" id="pg-g" min="0" max="15" step="0.1" value="9.81"></div>
@@ -375,14 +383,15 @@
         <label class="check"><input type="checkbox" id="s3-flat"> Show the flat sheet (fully actuated picture)</label>
       </div>
       <div class="views3">
-        <div class="view"><canvas id="s3-canvas" style="aspect-ratio: 16 / 10;" aria-label="Three-dimensional view of the sheet E, the target curve and trajectories"></canvas></div>
-        <div class="view"><canvas id="s3-arm" style="aspect-ratio: 16 / 10;" aria-label="The three-joint arm for each launched trajectory"></canvas><span class="lab">The arm, one colour per trajectory.</span></div>
+        <div class="view"><canvas id="s3-canvas" role="img" style="aspect-ratio: 16 / 10;" aria-label="Three-dimensional view of the sheet E, the target curve and trajectories"></canvas></div>
+        <div class="view"><canvas id="s3-arm" role="img" aria-label="The three-joint arm for each launched trajectory"></canvas><span class="lab">The arm, one colour per trajectory.</span></div>
       </div>
       <div class="legend">
         <span><span class="sw" style="background: var(--held);"></span>sheet \(\mathcal{E}\), coloured by \(q_{\mathrm u}\)</span>
         <span><span class="sw" style="background: var(--actuator);"></span>lines of constant actuation</span>
         <span><span class="sw" style="background: var(--target);"></span>configurations with \(h(q)=\bar x\)</span>
-        <span><span class="sw" style="background: var(--fg);"></span>circle: held solution</span>
+        <span><span class="sw" style="width: 11px; height: 11px; border-radius: 50%; background: none; border: 2px solid var(--fg);"></span>held solution</span>
+        <span><span class="sw" style="height: 0; border-top: 2px dashed var(--muted); background: none;"></span>Algorithm 2 start, dropped onto \(\mathcal{E}\) along \(q_{\mathrm u}\)</span>
       </div>
       <div class="controls">
         <div class="ctl"><label for="s3-g">Gravity \(g\) <output id="s3-g-v">9.8</output></label><input type="range" id="s3-g" min="0" max="15" step="0.1" value="9.81"></div>
@@ -406,14 +415,14 @@
   <section aria-labelledby="sims">
     <p class="eyebrow">Results</p>
     <h2 id="sims">Simulations: a soft arm and a balancing dancer</h2>
-    <p class="prose">Two systems, each run with both algorithms, in feedforward (ff: the error is computed on the algorithm's own state) and feedback (fb: the error is computed on the measured robot). A low-level controller tracks the actuated part \(\bar q_{\mathrm a}\) of the algorithm's output, with feedforward \(G_{\mathrm a}(\bar q)\); \(q_{\mathrm u}\) follows through the physics. In these runs Algorithm 1 uses an approximate statics map, so its offsets come from that approximation. Videos play in real time; click a video to pause it.</p>
+    <p class="prose">Two systems, each run with both algorithms, in feedforward (ff: the error is computed on the algorithm's own state) and feedback (fb: the error is computed on the measured robot). A low-level controller tracks the actuated part \(\bar q_{\mathrm a}\) of the algorithm's output, with feedforward \(G_{\mathrm a}(\bar q)\); \(q_{\mathrm u}\) follows through the physics. In these runs Algorithm 1 uses a statics map that neglects gravity; on the stiff arm it then reduces to the actuator-space scheme common in soft robotics, and its offsets come from that approximation. Videos play in real time; click a video to pause it.</p>
     <p class="takeaway"><b>Takeaway.</b> Algorithm 2 converges to the target in every soft-arm case. Algorithm 1 is as accurate as its statics map: a better map, or feedback, shrinks its error.</p>
 
     <h3>A planar continuum arm, stiff and soft</h3>
-    <p class="prose">A planar soft arm, modelled with five constant-curvature segments and driven by two actuated sections: \(q\) has five curvatures, \(q_{\mathrm a}\) two, \(q_{\mathrm u}\) three, and the task is the two-dimensional tip position. Top: the arm under the four variants; red cross: target; teal dots: section ends. Bottom: the tip coordinates over time.</p>
+    <p class="prose">A planar soft arm, modelled with five constant-curvature segments and driven by two actuated sections: \(q\) has five curvatures, \(q_{\mathrm a}\) two, \(q_{\mathrm u}\) three, and the task is the two-dimensional tip position. Top: the arm under the four variants; red cross: target; teal dots: section ends. Bottom (wide screens only): the tip coordinates over time.</p>
     <div class="simviewer">
       <div class="simtabs" role="group" aria-label="Soft arm scenario">
-        <button type="button" data-sim="pcc_stiff" data-ar="2 / 1" aria-pressed="false">Stiff arm · one target<template>Stiff arm (paper, Fig. 18). All four variants reach the neighbourhood of the target. Algorithm 1 uses a statics map that neglects gravity and stops slightly off; Algorithm 2 reaches the target. 5 s.</template></button>
+        <button type="button" data-sim="pcc_stiff" data-ar="2 / 1" aria-pressed="false">Stiff arm · one target<template>Stiff arm (paper, Fig. 18). All four variants reach the neighbourhood of the target. Algorithm 1 uses a statics map that neglects gravity and stops slightly off; Algorithm 2 reaches the target. Feedforward and feedback behave almost alike, since the stiff arm is close to fully actuated. 5 s.</template></button>
         <button type="button" data-sim="pcc_soft" data-ar="2 / 1" aria-pressed="false">Soft arm · one target<template>Soft arm, 3% of the stiffness (paper, Fig. 19). The arm bends under its own weight. Algorithm 1 in feedforward ends far from the target; feedback reduces the error but leaves an offset. Algorithm 2 converges to the target, faster with feedback. 20 s.</template></button>
         <button type="button" data-sim="pcc_soft_gravity" data-ar="2 / 1" aria-pressed="false">Soft arm · Algorithm 1 with gravity<template>Algorithm 1 on the soft arm with its statics map expanded to first and to second order in gravity, instead of neglecting it. A better statics map brings the feedforward tip closer to the target. 20 s.</template></button>
         <button type="button" data-sim="pcc_stiff_triangle" data-ar="2 / 1" aria-pressed="false">Stiff arm · three targets<template>Stiff arm moving through three targets, with a reference that slides from one to the next. 15 s.</template></button>
@@ -484,8 +493,8 @@
       <div>
         <h3>Algorithm 1 · statics solved beforehand</h3>
 <pre><code>define  q̄u(qa)          explicit equilibrium map
-        f(qa) = h(c⁻¹(qa, q̄u(qa)))
-        J(qa) = ∂f/∂qa
+        f(qa) = h(c⁻¹(qa, q̄u(qa)))   actuators-to-task map (h∘ha)
+        J(qa) = ∂f/∂qa = Ja − Ju Huu⁻¹Hua
 choose  Γ ≻ 0, tolerance εx, step Δt, initial qa
 while ‖x̄ − f(qa)‖ > εx
     ex ← x̄ − f(qa)
@@ -494,7 +503,7 @@ while ‖x̄ − f(qa)‖ > εx
       </div>
       <div>
         <h3>Algorithm 2 · statics solved online</h3>
-<pre><code>define  f(qa, qu) = h(c⁻¹(qa, qu))
+<pre><code>define  f(qa, qu) = h(c⁻¹(qa, qu))   task in actuation coordinates
         Ja, Ju       task Jacobians
         Hua, Huu     derivatives of Gu
 choose  ΓZ, ΓE ≻ 0, tolerances, step Δt, initial (qa, qu)

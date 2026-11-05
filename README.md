@@ -1,26 +1,22 @@
 # Project page: underactuated inverse kinematics (IJRR)
 
-Static website, no build step. Open `index.html` in a browser to preview it locally.
+Project page of the IJRR paper *Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots* (C. Della Santina). Live at https://dzcosimo.github.io/underactuated-ik/
 
-## Publish on GitHub Pages (about 10 minutes)
+Static website, no build step: GitHub Pages serves this repository from `main`, folder `/ (root)`. Open `index.html` in a browser to preview it locally.
 
-1. In the group's GitHub organisation, create a new **public** repository, for example `underactuated-ik`.
-2. Upload the whole content of this folder (all files, flat) to the repository root.
-   On github.com: *Add file → Upload files*, drag the files and folders in, *Commit changes*.
-3. Go to *Settings → Pages*. Under *Build and deployment*, choose *Deploy from a branch*, branch `main`, folder `/ (root)`, and *Save*.
-4. After a minute the page is live at `https://<organisation>.github.io/underactuated-ik/`.
+MATLAB code of the simulations: https://github.com/dzcosimo/underactuated-ik-code
 
 ## Files
 
 - `index.html`: the page.
-- `playground.js`: interactive tendon-driven double pendulum (both strategies).
+- `playground.js`: interactive tendon-driven double pendulum (plain IK, Algorithms 1 and 2).
 - `sheet3d.js`: interactive 3D view of the held configurations of a 3-joint arm.
-- `*.mp4`, `*.jpg`: explainer videos and loops (MP4, under 12 MB each), with poster frames.
-- `scheme_*.jpg`: block diagrams of the two strategies.
+- `simviewer.js`: tabbed players for the simulation videos.
+- `explainer_*.mp4`, `hero_problem.mp4` and the other loops: explainer videos made with Manim, with poster frames (`*.jpg`).
+- `sim_*.mp4`: simulation videos of the soft arm (`pcc`) and the dancer (`bal`); `sim_*_m.mp4` are the phone versions.
+- `fig1_systems.jpg`, `results_*.jpg`, `scheme_*.jpg`: figures from the paper.
 
 ## Still to fill in
 
-- Paper, arXiv and code links (buttons marked "link soon" in the header).
-- The three simulation videos (dashed boxes in "Simulations of a soft arm").
-- The MATLAB repository link (section "Implementation").
+- Paper and arXiv links (button "Paper and arXiv" in the header).
 - Volume, pages and DOI in the BibTeX entry.

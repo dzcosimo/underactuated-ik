@@ -42,16 +42,18 @@
       s -= step;
       if (Math.abs(step) < 1e-10) break;
     }
-    if (Math.abs(f(s)) < 1e-6 && Math.abs(s - s0) < 2.5) return { q: at(s), s };
-    // fallback: nearest sign change around s0
+    // a root counts only if it is a stable equilibrium (positive stiffness along the passive direction)
+    const stable = (s) => kD(at(s)) > 0;
+    if (Math.abs(f(s)) < 1e-6 && Math.abs(s - s0) < 2.5 && stable(s)) return { q: at(s), s };
+    // fallback: nearest stable root around s0
     let best = null;
-    for (let r = 0.02; r < 4 && !best; r += 0.02) {
+    for (let r = 0.02; r < 6 && best === null; r += 0.02) {
       for (const sg of [1, -1]) {
         const a1 = s0 + sg * (r - 0.02), b1 = s0 + sg * r;
         if (f(a1) * f(b1) <= 0) {
           let lo = a1, hi = b1;
           for (let k = 0; k < 50; k++) { const m = (lo + hi) / 2; if (f(lo) * f(m) <= 0) hi = m; else lo = m; }
-          best = (lo + hi) / 2; break;
+          if (stable((lo + hi) / 2)) { best = (lo + hi) / 2; break; }
         }
       }
     }
@@ -96,6 +98,8 @@
     const gx = grad(X, S.q), gu = grad(Gu, S.q);
     const r1 = S.gain * (S.xbar - X(S.q)), r2 = -S.gain * Gu(S.q);
     // damped least squares on the 2x2 system [gx; gu] qdot = [r1; r2]
+    const dM = gx[0] * gu[1] - gx[1] * gu[0];
+    if (Math.abs(dM) < 1e-3) { S.msg = "Singular: task and statics directions align"; return false; }
     const M = [[gx[0], gx[1]], [gu[0], gu[1]]];
     const MtM = [[M[0][0] ** 2 + M[1][0] ** 2 + 1e-4, M[0][0] * M[0][1] + M[1][0] * M[1][1]],
                  [M[0][0] * M[0][1] + M[1][0] * M[1][1], M[0][1] ** 2 + M[1][1] ** 2 + 1e-4]];
@@ -144,6 +148,8 @@
     }
     return segs;
   }
+  const wrap = (a) => a - 2 * Math.PI * Math.floor((a + Math.PI) / (2 * Math.PI));
+  const wrapQ = (q) => [wrap(q[0]), wrap(q[1])];
   let Esegs = [], Zsegs = [];
   const recomputeCurves = () => { Esegs = contour(Gu, 150, 150); recomputeZ(); };
   const recomputeZ = () => { Zsegs = contour(X, 150, 150, S.xbar); };
@@ -151,7 +157,7 @@
   function drawArm() {
     const { w, h, dpr } = fit(armCv), c = armCv.getContext("2d");
     c.clearRect(0, 0, w, h);
-    const sc = Math.min(w, h) / 5.0, bx = w / 2, by = h * 0.16;
+    const sc = Math.min(w, h) / 4.6, bx = w / 2, by = h * 0.5;
     const P2 = (x, y) => [bx + x * sc, by - y * sc];
     const fk = (q) => [[0, 0], [P.l1 * Math.sin(q[0]), -P.l1 * Math.cos(q[0])],
       [P.l1 * Math.sin(q[0]) + P.l2 * Math.sin(q[0] + q[1]), -P.l1 * Math.cos(q[0]) - P.l2 * Math.cos(q[0] + q[1])]];
@@ -216,8 +222,10 @@
     segs(Esegs, css("--held"), 3.5, false);
     // trail and current point
     c.strokeStyle = css("--accent2"); c.lineWidth = 2 * dpr; c.beginPath();
-    S.trail.forEach((q, i) => { const t = toPx(q); i ? c.lineTo(...t) : c.moveTo(...t); }); c.stroke();
-    const p = toPx(S.q);
+    // angles wrapped to [-pi, pi); the trace breaks where it wraps
+    let prev = null;
+    S.trail.forEach((q) => { const w2 = wrapQ(q), t = toPx(w2); if (!prev || Math.abs(w2[0] - prev[0]) > Math.PI || Math.abs(w2[1] - prev[1]) > Math.PI) c.moveTo(...t); else c.lineTo(...t); prev = w2; }); c.stroke();
+    const p = toPx(wrapQ(S.q));
     c.fillStyle = css("--fg"); c.beginPath(); c.arc(p[0], p[1], 6 * dpr, 0, 2 * Math.PI); c.fill();
     // legend
     c.font = `${13 * dpr}px ${css("--font-ui")}`;
@@ -250,10 +258,10 @@
   bindSlider("pg-k2", "k2", (v) => v.toFixed(0));
   bindSlider("pg-th", "th", (v) => v.toFixed(0) + "°", (v) => v * Math.PI / 180);
   const xs = $("pg-x");
-  xs.addEventListener("input", () => { S.xbar = parseFloat(xs.value); $("pg-x-v").textContent = S.xbar.toFixed(2); recomputeZ(); draw(); });
+  xs.addEventListener("input", () => { S.xbar = parseFloat(xs.value); $("pg-x-v").textContent = S.xbar.toFixed(2); recomputeZ(); draw(); follow(); });
 
   root.querySelectorAll("[data-algo]").forEach((b) => b.addEventListener("click", () => {
-    S.algo = +b.dataset.algo;
+    S.algo = +b.dataset.algo; S.follow = false;
     root.querySelectorAll("[data-algo]").forEach((x) => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
     if (S.algo === 0) { setRun(false); S.q = [0, -1]; S.msg = ""; }
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
@@ -261,8 +269,8 @@
   }));
   const runBtn = $("pg-run");
   const setRun = (r) => { S.running = r; runBtn.textContent = r ? "Pause" : "Run"; runBtn.setAttribute("aria-pressed", r ? "true" : "false"); };
-  runBtn.addEventListener("click", () => { S.msg = ""; setRun(!S.running); if (S.running) { S.trail = [S.q.slice()]; clearH(); loop(); } });
-  $("pg-reset").addEventListener("click", () => { setRun(false); S.q = [1.25, -1.0]; if (S.algo === 1) { const st = settle(S.q); if (st) S.q = st.q; } S.trail = [S.q.slice()]; clearH(); sMem = undefined; S.msg = ""; draw(); });
+  runBtn.addEventListener("click", () => { S.msg = ""; S.follow = S.algo !== 0; setRun(!S.running); if (S.running) { S.trail = [S.q.slice()]; clearH(); loop(); } });
+  $("pg-reset").addEventListener("click", () => { setRun(false); S.follow = false; S.q = [1.25, -1.0]; if (S.algo === 1) { const st = settle(S.q); if (st) S.q = st.q; } S.trail = [S.q.slice()]; clearH(); sMem = undefined; S.msg = ""; draw(); });
   $("pg-settle").addEventListener("change", (e) => { S.showSettle = e.target.checked; draw(); });
 
   // click / drag in configuration space sets the start
@@ -276,6 +284,13 @@
     if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
     S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw();
   };
+  csCv.addEventListener("keydown", (e) => {
+    const k = { ArrowLeft: [-0.1, 0], ArrowRight: [0.1, 0], ArrowUp: [0, 0.1], ArrowDown: [0, -0.1] }[e.key];
+    if (!k) return; e.preventDefault(); setRun(false); S.follow = false;
+    S.q = [S.q[0] + k[0], S.q[1] + k[1]]; sMem = undefined;
+    if (S.algo === 1) { const st = settle(S.q); if (st) { S.q = st.q; sMem = st.s; } }
+    S.trail = [S.q.slice()]; clearH(); S.msg = ""; draw();
+  });
   csCv.addEventListener("pointerdown", (e) => { dragCS = true; csCv.setPointerCapture(e.pointerId); csPick(e); });
   csCv.addEventListener("pointermove", (e) => { if (dragCS) csPick(e); });
   csCv.addEventListener("pointerup", () => { dragCS = false; });
@@ -285,7 +300,7 @@
     const r = armCv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
     const x = ((ev.clientX - r.left) * dpr - armGeom.bx) / armGeom.sc;
     S.xbar = Math.max(-1.95, Math.min(1.95, x)); xs.value = S.xbar; $("pg-x-v").textContent = S.xbar.toFixed(2);
-    recomputeZ(); draw();
+    recomputeZ(); draw(); follow();
   };
   armCv.addEventListener("pointerdown", (e) => { dragT = true; armCv.setPointerCapture(e.pointerId); tPick(e); });
   armCv.addEventListener("pointermove", (e) => { if (dragT) tPick(e); });
@@ -326,6 +341,8 @@
   }
   new ResizeObserver(drawPlot).observe(root.querySelector("#pg-plot"));
 
+  // after a run with Algorithm 1 or 2, moving the target restarts the loop
+  function follow() { if (S.follow && !S.running && S.algo !== 0) { S.msg = ""; setRun(true); loop(); } }
   let raf = null;
   function loop() {
     if (!S.running) return;

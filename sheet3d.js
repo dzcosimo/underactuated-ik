@@ -187,6 +187,7 @@
       for (let k = 0; k < n; k++) { const p = proj(r.pts[k], w, h); k ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1]); } c.stroke();
       const p = proj(r.pts[n - 1], w, h); c.fillStyle = r.col; c.beginPath(); c.arc(p[0], p[1], 5 * d, 0, 2 * Math.PI); c.fill();
       const p0 = proj(r.pts[0], w, h); c.strokeStyle = r.col; c.lineWidth = 2 * d; c.beginPath(); c.arc(p0[0], p0[1], 5 * d, 0, 2 * Math.PI); c.stroke();
+      if (r.foot) { const pf = proj(r.foot, w, h); c.setLineDash([4 * d, 4 * d]); c.lineWidth = 1.5 * d; c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(pf[0], pf[1]); c.stroke(); c.setLineDash([]); c.beginPath(); c.arc(pf[0], pf[1], 2.5 * d, 0, 2 * Math.PI); c.fillStyle = r.col; c.fill(); }
     }
     if (star) { const p = proj(star, w, h); c.strokeStyle = css("--fg"); c.lineWidth = 2.5 * d; c.beginPath(); c.arc(p[0], p[1], 9 * d, 0, 2 * Math.PI); c.stroke(); }
     drawArm();
@@ -219,7 +220,8 @@
     let qs;
     if (kind === 1) { const a0 = [-1.3 + 2.6 * Math.random(), -1.3 + 2.6 * Math.random()]; qs = [ha(a0)].concat(runAlg1(a0)); }
     else { const a = [-1.3 + 2.6 * Math.random(), -1.3 + 2.6 * Math.random(), -0.45 + 0.9 * Math.random()]; qs = runAlg2(fromAQ(...a)); }
-    runs.push({ qs, pts: qs.map(toAQ), col: COLS[colI++ % COLS.length], t0: performance.now() });
+    const pts = qs.map(toAQ), p0 = pts[0];
+    runs.push({ qs, pts, col: COLS[colI++ % COLS.length], t0: performance.now(), kind, foot: kind === 2 ? [p0[0], p0[1], quBar(p0[0], p0[1], p0[2])] : null });
     if (runs.length > 6) runs.shift();
   };
   root.querySelector("#s3-on").addEventListener("click", () => addRun(1));
