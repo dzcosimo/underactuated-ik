@@ -1,10 +1,10 @@
 # Project page: underactuated inverse kinematics (IJRR)
 
-Project page of the IJRR paper *Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots* (C. Della Santina). Live at https://dzcosimo.github.io/underactuated-ik/
+Project page of the IJRR paper *Pushing the boundaries of actuators-to-task kinematic inversion: from fully actuated to underactuated (soft) robots* (C. Della Santina). Live at https://tud-phi.github.io/underactuated-ik/
 
 Static website, no build step: GitHub Pages serves this repository from `main`, folder `/ (root)`. Open `index.html` in a browser to preview it locally.
 
-MATLAB code of the simulations: https://github.com/dzcosimo/underactuated-ik-code
+MATLAB code of the simulations: https://github.com/tud-phi/underactuated-ik-code
 
 ## Files
 
