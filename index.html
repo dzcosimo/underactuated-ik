@@ -430,8 +430,9 @@
     <div class="pair" style="align-items: center;">
       <figure><video src="flat_sheet_to_E.mp4" poster="flat_sheet_to_E.jpg" autoplay muted loop playsinline aria-label="The flat sheet of the fully actuated picture morphing into the sheet E"></video></figure>
       <div class="prose" style="display: flex; flex-direction: column; gap: 14px;">
-        <p>The actuator, configuration and task spaces of continuum robotics, with an actuation model between the first two, may look familiar. That picture gives the three spaces the same dimension, so the actuators alone fix the configuration.</p>
-        <p>In reality the configuration space is much larger. The held configurations form a set \(\mathcal{E}\) with the dimension of the actuators, and the actuators-to-task map lives on it. Without gravity, with linear elasticity, equal stiffness within each actuated section and a straight rest shape, \(\mathcal{E}\) is exactly the flat sheet of the familiar picture. This helps explain why the fully actuated approximation has worked so well in practice.</p>
+        <p>You may recognize the familiar picture of continuum robotics: actuator, configuration, and task spaces, with an actuation model connecting the first two. In this simplified representation, all three spaces have the same dimension, and the actuators fully determine the robot’s configuration.</p>
+        <p>In reality, the configuration space is much larger. The configurations the robot can maintain in equilibrium form a lower-dimensional set \(\mathcal{E}\), whose dimension matches the number of actuators. The mapping from actuation to task space is defined on \(\mathcal{E}\).</p>
+        <p>Interestingly, when gravity is neglected, elasticity is linear, stiffness is uniform within each actuated section, and the rest shape is straight, \(\mathcal{E}\) becomes exactly the flat surface assumed by the familiar representation. This helps explain why the fully actuated approximation has worked so well in practice.</p>
       </div>
     </div>
   </section>
@@ -439,11 +440,14 @@
   <section aria-labelledby="sims">
     <p class="eyebrow">Results</p>
     <h2 id="sims">Simulations: a soft arm and a balancing dancer</h2>
-    <p class="takeaway"><b>Takeaway.</b> Algorithm 2 approaches the target in every soft-arm run. Algorithm 1 is as accurate as its statics map: a better map, or feedback, shrinks its error. On the dancer, both track the reference; a 20% model error leaves offsets, and an unstable target cannot be held.</p>
-    <p class="prose">Two systems, each run with both algorithms, open loop (ff: the error uses the algorithm's own state) and closed loop (fb: the error uses the measured robot). A low-level controller tracks \(\bar q_{\mathrm a}\); \(q_{\mathrm u}\) follows through the physics. Here Algorithm 1 uses a statics map without gravity on purpose, to show what that approximation costs, and the Jacobian-transpose update \(\dot q_{\mathrm a} = J^\top \Gamma e\). Videos play in real time; click to pause.</p>
+    <p class="takeaway"><b>Takeaway.</b> Algorithm 2 approaches the target in every soft-arm experiment. For Algorithm 1, accuracy depends on the quality of the statics model: improving the model or introducing feedback reduces the tracking error. On the dancer, both algorithms track the reference, although a 20% model error introduces steady-state offsets. Unstable target configurations, instead, cannot be maintained.</p>
+    <p class="prose">We test both algorithms on both systems, in feedforward (ff) and feedback (fb) modes. In feedforward mode, the algorithm computes the task error using its own predicted state \(\bar q\); in feedback mode, it uses the measured robot configuration \(q\). A low-level controller tracks the commanded actuated coordinates \(\bar q_{\mathrm a}\), while the passive coordinates \(q_{\mathrm u}\) evolve according to the robot’s mechanics.</p>
+    <p class="prose">For Algorithm 1, we deliberately use a statics model that neglects gravity, to illustrate the consequences of this approximation, together with a Jacobian-transpose update \(\dot q_{\mathrm a} = J^\top \Gamma e\).</p>
+    <p class="hint">Videos play in real time. Click to pause.</p>
 
-    <h3>A planar continuum arm, stiff and soft</h3>
-    <p class="prose">A planar soft arm, modelled with five constant-curvature segments and driven by two actuated sections: \(q\) has five curvatures, \(q_{\mathrm a}\) two, \(q_{\mathrm u}\) three, and the task is the two-dimensional tip position. Top: the arm under the four variants; red cross: target; teal dots: section ends. Bottom (wide screens only): the tip coordinates over time.</p>
+    <h3>A planar continuum arm: stiff and soft</h3>
+    <p class="prose">We consider a planar soft arm represented by five constant-curvature segments and driven by two actuated sections. Its configuration \(q\) consists of five curvature coordinates, two actuated (\(q_{\mathrm a}\)) and three passive (\(q_{\mathrm u}\)), while the task \(x\) is the two-dimensional position of the tip.</p>
+    <p class="hint"><b>Top:</b> robot motion under the four algorithm variants. The red cross marks the target, and the teal dots indicate the section endpoints.<br><b>Bottom (wide screens only):</b> evolution of the tip coordinates over time.</p>
     <div class="simviewer">
       <div class="simtabs" role="group" aria-label="Soft arm scenario">
         <button type="button" data-sim="pcc_stiff" data-ar="2 / 1" aria-pressed="false">Stiff arm · one target<template>Stiff arm (paper, Fig. 18). All four variants reach the neighbourhood of the target. Algorithm 1 uses a statics map that neglects gravity and stops slightly off; Algorithm 2 reaches the target. Feedforward and feedback behave almost alike, since the stiff arm is close to fully actuated. 5 s.</template></button>
