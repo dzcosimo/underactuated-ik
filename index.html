@@ -283,11 +283,11 @@
 
   <section aria-labelledby="contrib">
     <p class="eyebrow">What the paper contributes</p>
-    <h2 id="contrib">Inverse kinematics on the shapes the robot can hold</h2>
+    <h2 id="contrib">Inverse kinematics on configurations the robot can hold</h2>
     <div class="contrib">
-      <div><h3>A general formulation</h3><p>Closed-loop inverse kinematics extended to underactuated mechanical systems, built on the set \(\mathcal{E}\) of configurations the robot can hold. Classic IK is the fully actuated special case; the actuator-space inversion of soft robotics is the case of a flat \(\mathcal{E}\).</p></div>
-      <div><h3>Algorithm 1</h3><p>Closed-loop inverse kinematics (CLIK) on \(\mathcal{E}\) when the statics can be solved for the passive coordinates beforehand, with conditions for exponential convergence.</p></div>
-      <div><h3>Algorithm 2</h3><p>"The robot can hold this shape" written as an equation on \(q\) (a holonomic constraint) and added to the loop as a second task, as in constrained CLIK. No explicit solution of the statics is needed; convergence conditions are given.</p></div>
+      <div><h3>A general formulation</h3><p>We extend closed-loop inverse kinematics to underactuated mechanical systems by restricting solutions to the set of configurations the robot can maintain in static equilibrium. Classical IK is recovered as the fully actuated special case, while actuator-space inversion in soft robotics corresponds to a flat equilibrium set.</p></div>
+      <div><h3>Algorithm 1</h3><p>When the passive coordinates can be determined by solving the statics in advance, we formulate CLIK directly on the equilibrium set and establish conditions for exponential convergence.</p></div>
+      <div><h3>Algorithm 2</h3><p>We express static equilibrium as a holonomic constraint and incorporate it into the control loop as an additional task, following constrained CLIK. This avoids explicitly solving the statics while retaining formal convergence conditions.</p></div>
     </div>
   </section>
 
