@@ -393,6 +393,12 @@
         <div class="ctl"><label for="pg-th" title="How the tendon splits between the two joints">Tendon routing \(\theta\) <output id="pg-th-v">23°</output></label><input type="range" id="pg-th" min="0" max="90" step="0.5" value="22.5"></div>
       </div>
     </div>
+      <div class="pair" style="align-items: center; margin-top: 8px;">
+      <figure><div class="paperfig" style="background:#0e1116; padding:0;"><img src="analogy_pcc.jpg" alt="A double pendulum with one tendon next to a soft arm made of two constant-curvature segments with one tendon" loading="lazy"></div></figure>
+      <div class="prose">
+        <p><b>Read it as a soft arm.</b> The running example is close to a soft arm made of two constant-curvature segments driven by one tendon. The joint angles \(q_1, q_2\) become the bending angles \(\theta_1, \theta_2\) of the segments, the joint springs their bending stiffness, and the tendon runs along both segments, so it sets \(q_{\mathrm a} \propto \theta_1 + \theta_2\) and leaves \(\theta_1 - \theta_2\) free. The pseudocode of both algorithms carries over unchanged; the walkthrough videos in the practitioner's guide end with this mapping.</p>
+      </div>
+    </div>
   </section>
 
   <section aria-labelledby="s3-title">
@@ -520,6 +526,8 @@
     <div class="code-row">
       <div>
         <h3>Algorithm 1 · statics solved beforehand</h3>
+        <video src="howto_alg1.mp4" poster="howto_alg1.jpg" controls preload="none" playsinline aria-label="Walkthrough of the Algorithm 1 pseudocode and block scheme on the tendon-driven double pendulum"></video>
+        <p class="hint">Walkthrough, about 80 s: each line of the pseudocode, its block in the scheme, and what it does on the running example; at the end, the same recipe for a two-segment soft arm.</p>
 <pre><code>define  q̄u(qa)          explicit equilibrium map
         f(qa) = h(c⁻¹(qa, q̄u(qa)))   actuators-to-task map (h∘ha)
         J(qa) = ∂f/∂qa = Ja − Ju Huu⁻¹Hua
@@ -531,6 +539,8 @@ while ‖x̄ − f(qa)‖ > εx
       </div>
       <div>
         <h3>Algorithm 2 · statics solved online</h3>
+        <video src="howto_alg2.mp4" poster="howto_alg2.jpg" controls preload="none" playsinline aria-label="Walkthrough of the Algorithm 2 pseudocode and block scheme on the tendon-driven double pendulum"></video>
+        <p class="hint">Walkthrough, about 1 min: the two corrections of each step, on the running example; at the end, the same recipe for a two-segment soft arm.</p>
 <pre><code>define  f(qa, qu) = h(c⁻¹(qa, qu))   task in actuation coordinates
         Ja, Ju       task Jacobians
         Hua, Huu     derivatives of Gu
