@@ -274,7 +274,7 @@
   <section id="explainers" aria-labelledby="problem">
     <p class="eyebrow">Explainer 1 · 1.5 min</p>
     <h2 id="problem">The problem</h2>
-    <p class="prose">With a motor on every joint, inverse kinematics is geometry: any configuration that reaches the target works, because the motors hold it. Replace the two motors with one tendon and the arm keeps one direction of motion that no actuator controls: gravity and springs decide where it goes. Most configurations that reach the target can no longer be held. The ones the robot can hold form a set \(\mathcal{E}\), and the solution has to lie on it.</p>
+    <p class="prose">With a motor at every joint, inverse kinematics is essentially a geometric problem: any configuration that reaches the target can, in principle, be maintained by the motors. Replace two motors with a single tendon, however, and one direction of motion remains unactuated. Along this direction, the equilibrium is determined by gravity and elastic forces. Consequently, most configurations that reach the target can no longer be maintained. The configurations that the robot can hold form an equilibrium manifold \(\mathcal{E}\), and any valid inverse-kinematics solution must lie within it.</p>
     <figure>
       <video src="explainer_problem.mp4" poster="explainer_problem.jpg" controls preload="metadata" playsinline></video>
       <figcaption>From the fully actuated arm to a tendon-driven double pendulum. The goal: a loop that brings the tip to the target and the shape onto \(\mathcal{E}\).</figcaption>
